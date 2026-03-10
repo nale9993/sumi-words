@@ -7,21 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #f0ece4;
-    --ink-light: #a89880;
-    --paper: #111010;
-    --paper-dark: #1c1a18;
-    --paper-darker: #2a2622;
-    --red: #e05545;
-    --red-light: #f07060;
-    --gold: #c9a84c;
-    --gold-light: #f0c040;
+    --ink: #eceef5;
+    --ink-light: #8899b8;
+    --paper: #0e1117;
+    --paper-dark: #161b27;
+    --paper-darker: #1e2535;
+    --red: #e05565;
+    --red-light: #f07878;
+    --gold: #8b9cf0;
+    --gold-light: #b0beff;
     --blue: #4a8ec2;
     --blue-light: #6aaee0;
     --green: #4a9e72;
     --green-light: #60c090;
     --stage-meaning: #7a9e7e;
-    --stage-reading: #4a8ec2;
+    --stage-reading: #6b88e0;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,8 +34,8 @@
     color: var(--ink);
     min-height: 100vh;
     background-image:
-      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(44,95,138,0.06) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 20%, rgba(107,136,224,0.10) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(74,158,114,0.06) 0%, transparent 50%);
   }
 
   body::before {
@@ -241,14 +241,22 @@
     cursor: pointer;
     font-family: 'Noto Sans JP', sans-serif;
     font-size: 13px; color: var(--ink);
-    transition: border-color 0.15s;
+    transition: background 0.4s, border-color 0.4s, color 0.4s, box-shadow 0.4s;
     text-align: center; font-weight: 400;
     -webkit-tap-highlight-color: transparent;
     user-select: none; -webkit-user-select: none;
   }
   .choice-btn:hover:not(:disabled) { border-color: var(--gold); }
-  .choice-btn.correct { background: color-mix(in srgb, var(--green) 20%, var(--paper-dark)); border-color: var(--green); color: var(--green-light); }
-  .choice-btn.wrong   { background: color-mix(in srgb, var(--red)   20%, var(--paper-dark)); border-color: var(--red);   color: var(--red-light); }
+  .choice-btn.correct {
+    background: color-mix(in srgb, var(--green) 20%, var(--paper-dark));
+    border-color: var(--green); color: var(--green-light);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--green) 35%, transparent);
+  }
+  .choice-btn.wrong {
+    background: color-mix(in srgb, var(--red) 20%, var(--paper-dark));
+    border-color: var(--red); color: var(--red-light);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--red) 35%, transparent);
+  }
 
   /* ── TEXT INPUT (reading quiz) ──────────────────────────────── */
   .input-area { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
@@ -265,8 +273,16 @@
     transition: border-color 0.4s, background 0.4s;
     letter-spacing: 0.05em;
   }
-  .romaji-input.correct { border-color: var(--green); background: color-mix(in srgb, var(--green) 5%, var(--paper)); }
-  .romaji-input.wrong   { border-color: var(--red);   background: color-mix(in srgb, var(--red)   5%, var(--paper)); }
+  .romaji-input.correct {
+    border-color: var(--green);
+    background: color-mix(in srgb, var(--green) 5%, var(--paper));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--green) 35%, transparent);
+  }
+  .romaji-input.wrong {
+    border-color: var(--red);
+    background: color-mix(in srgb, var(--red) 5%, var(--paper));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--red) 35%, transparent);
+  }
 
   .submit-btn {
     padding: 12px 40px;
@@ -449,10 +465,8 @@
     40%      { background-color: color-mix(in srgb, var(--red) 20%, var(--paper-dark)); }
   }
 
-  .animate-in   { animation: slideUp 0.3s ease; }
-  .shake        { animation: shake 0.4s ease; }
-  .flash-correct { animation: flashCorrect 0.6s ease; }
-  .flash-wrong   { animation: flashWrong   0.6s ease; }
+  .animate-in { animation: slideUp 0.3s ease; }
+  .shake      { animation: shake 0.4s ease; }
 
   /* Stage colour helpers */
   .stage-meaning { --stage-color: var(--stage-meaning); }
@@ -1579,6 +1593,11 @@ function startQuiz() {
   renderQuizCard();
 }
 
+// Returns true if the word's display form is pure kana (no kanji to read)
+function isKanaOnly(wd) {
+  return !/[\u4e00-\u9fff\u3400-\u4dbf\uff00-\uffef]/.test(wd.word);
+}
+
 function renderQuizCard() {
   if (session.currentIdx >= session.queue.length) {
     showComplete();
@@ -1590,11 +1609,11 @@ function renderQuizCard() {
   const color = getStageColor(item.stage);
   const label = getStageLabel(item.stage);
 
-  session.answered         = false;
-  session.item             = item;
-  session.userAnswer       = '';
+  session.answered          = false;
+  session.item              = item;
+  session.userAnswer        = '';
   session.firstAttemptWrong = false;
-  session.usedSecondChance = false;
+  session.usedSecondChance  = false;
 
   // Progress bar (unique words)
   const uniqueTotal = new Set(session.queue.map(it => it.idx)).size;
@@ -1612,9 +1631,8 @@ function renderQuizCard() {
   let html = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
 
   if (item.stage === 'meaning') {
-    // Show word + kana, ask for meaning (multiple choice)
+    // Show word — NO kana (that would give away the reading quiz answer)
     html += `<div class="quiz-word">${wd.word}</div>`;
-    html += `<div class="quiz-word-kana">${wd.kana}</div>`;
     html += `<div class="quiz-prompt">What does this word mean?</div>`;
     const { choices, correct } = getMeaningChoices(item.idx);
     session.meaningCorrect = correct;
@@ -1623,9 +1641,24 @@ function renderQuizCard() {
       html += `<button class="choice-btn" data-meaning="${c.replace(/"/g,'&quot;')}">${c}</button>`;
     });
     html += `</div>`;
+
+  } else if (isKanaOnly(wd)) {
+    // Kana-only word: the display IS the reading, so self-assess instead of typing
+    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-prompt" style="margin-bottom:12px;">
+               This word is written in kana — did you know how to read it?
+             </div>`;
+    html += `<div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--ink-light);
+                          margin-bottom:28px;">${wd.romaji}</div>`;
+    html += `<div class="choices">
+      <button class="choice-btn" id="kana-know-btn"
+              onclick="kanaOnlyAnswer(true)" style="color:var(--green-light);">✓ I knew it</button>
+      <button class="choice-btn" id="kana-dontknow-btn"
+              onclick="kanaOnlyAnswer(false)" style="color:var(--red-light);">✗ Didn't know</button>
+    </div>`;
+
   } else {
-    // Show word only, ask for reading (romaji / kana input)
-    // Kana is hidden — it's what they're being tested on
+    // Show word only (kana hidden — that's what they're being tested on)
     html += `<div class="quiz-word">${wd.word}</div>`;
     html += `<div class="quiz-word-kana hidden" id="quiz-kana-reveal">${wd.kana}</div>`;
     html += `<div class="quiz-prompt">How do you read this word?</div>`;
@@ -1648,13 +1681,12 @@ function renderQuizCard() {
 
   card.innerHTML = html;
 
-  // Attach meaning click via delegation
   if (item.stage === 'meaning') {
     document.getElementById('meaning-choices').addEventListener('click', e => {
       const btn = e.target.closest('.choice-btn');
       if (btn) selectMeaning(btn, btn.dataset.meaning, session.meaningCorrect);
     });
-  } else {
+  } else if (!isKanaOnly(wd)) {
     setTimeout(() => {
       const inp = document.getElementById('romaji-input');
       if (inp) inp.focus({ preventScroll: true });
@@ -1682,10 +1714,9 @@ function onRomajiKeydown(e) {
   }
 }
 
-// ── Meaning (multiple choice) ─────────────────────
 function selectMeaning(btn, selected, correct) {
   if (session.answered) return;
-  session.answered  = true;
+  session.answered   = true;
   session.wasCorrect = selected === correct;
   session.userAnswer = selected;
 
@@ -1697,15 +1728,30 @@ function selectMeaning(btn, selected, correct) {
 
   gradeCurrentCard(session.wasCorrect);
 
-  const card = document.getElementById('quiz-card');
-  card.classList.remove('flash-correct', 'flash-wrong');
-  void card.offsetWidth;
-  card.classList.add(session.wasCorrect ? 'flash-correct' : 'flash-wrong');
+  setTimeout(() => {
+    if (shouldShowReview()) showReviewScreen();
+    else nextQuizItem();
+  }, 1000);
+}
+
+// ── Kana-only self-assessment ─────────────────────
+function kanaOnlyAnswer(knew) {
+  if (session.answered) return;
+  session.answered         = true;
+  session.wasCorrect       = knew;
+  session.usedSecondChance = false;
+
+  const knowBtn    = document.getElementById('kana-know-btn');
+  const dontKnowBtn = document.getElementById('kana-dontknow-btn');
+  if (knowBtn)     { knowBtn.disabled     = true; if (knew)  knowBtn.classList.add('correct'); }
+  if (dontKnowBtn) { dontKnowBtn.disabled = true; if (!knew) dontKnowBtn.classList.add('wrong'); }
+
+  gradeCurrentCard(knew);
 
   setTimeout(() => {
     if (shouldShowReview()) showReviewScreen();
     else nextQuizItem();
-  }, 700);
+  }, 1000);
 }
 
 // ── Reading (text input) ──────────────────────────
@@ -1727,16 +1773,11 @@ function dontKnow() {
 
   gradeCurrentCard(false);
 
-  const card = document.getElementById('quiz-card');
-  card.classList.remove('flash-correct', 'flash-wrong');
-  void card.offsetWidth;
-  card.classList.add('flash-wrong');
-
   // Reveal kana
   const reveal = document.getElementById('quiz-kana-reveal');
   if (reveal) reveal.classList.remove('hidden');
 
-  setTimeout(() => showReviewScreen(), 700);
+  setTimeout(() => showReviewScreen(), 1000);
 }
 
 function submitReading() {
@@ -1793,15 +1834,10 @@ function submitReading() {
 
   gradeCurrentCard(wasCorrect);
 
-  const card = document.getElementById('quiz-card');
-  card.classList.remove('flash-correct', 'flash-wrong');
-  void card.offsetWidth;
-  card.classList.add(wasCorrect ? 'flash-correct' : 'flash-wrong');
-
   setTimeout(() => {
     if (shouldShowReview()) showReviewScreen();
     else nextQuizItem();
-  }, 700);
+  }, 1000);
 }
 
 function nextQuizItem() {
@@ -2169,7 +2205,6 @@ function renderPretestCard() {
     const { choices, correct } = getMeaningChoices(idx);
     pretest.meaningCorrect = correct;
     html += `<div class="quiz-word">${wd.word}</div>`;
-    html += `<div class="quiz-word-kana">${wd.kana}</div>`;
     html += `<div class="quiz-prompt">What does this word mean?</div>`;
     html += `<div class="choices" id="pretest-choices">`;
     choices.forEach(c => {
@@ -2230,11 +2265,6 @@ function pretestSelectMeaning(btn, selected, correct) {
     else if (b === btn && !wasCorrect) b.classList.add('wrong');
   });
 
-  const card = document.getElementById('pretest-card');
-  card.classList.remove('flash-correct', 'flash-wrong');
-  void card.offsetWidth;
-  card.classList.add(wasCorrect ? 'flash-correct' : 'flash-wrong');
-
   const idx = pretest.queue[pretest.pos];
   if (!pretest.results[idx]) pretest.results[idx] = {};
   pretest.results[idx].meaning = wasCorrect;
@@ -2262,11 +2292,6 @@ function submitPretestReading() {
 
   input.classList.add(wasCorrect ? 'correct' : 'wrong');
   input.disabled = true;
-
-  const card = document.getElementById('pretest-card');
-  card.classList.remove('flash-correct', 'flash-wrong');
-  void card.offsetWidth;
-  card.classList.add(wasCorrect ? 'flash-correct' : 'flash-wrong');
 
   if (!pretest.results[idx]) pretest.results[idx] = {};
   pretest.results[idx].reading = wasCorrect;
