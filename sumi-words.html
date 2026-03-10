@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>墨 Sumi — Word Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #f0ece4;
+    --ink-light: #a89880;
+    --paper: #111010;
+    --paper-dark: #1c1a18;
+    --paper-darker: #2a2622;
+    --red: #e05545;
+    --red-light: #f07060;
+    --gold: #c9a84c;
+    --gold-light: #f0c040;
+    --blue: #4a8ec2;
+    --blue-light: #6aaee0;
+    --green: #4a9e72;
+    --green-light: #60c090;
+    --stage-meaning: #7a9e7e;
+    --stage-reading: #4a8ec2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { height: -webkit-fill-available; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(44,95,138,0.06) 0%, transparent 50%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ────────────────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 24px;
+    border-bottom: 1px solid var(--paper-darker);
+    margin-bottom: 32px;
+  }
+
+  .logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--ink); letter-spacing: -0.5px; }
+  .logo span { color: var(--red); }
+
+  .header-stats {
+    display: flex; gap: 20px; font-size: 12px;
+    color: var(--ink-light); font-weight: 500;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .stat-value { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--ink); }
+
+  /* ── SCREENS ──────────────────────────────────────────────────── */
+  .screen { display: none; flex-direction: column; flex: 1; }
+  .screen.active { display: flex; }
+
+  /* ── HOME ────────────────────────────────────────────────────── */
+  .home-greeting { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--ink); margin-bottom: 8px; line-height: 1.2; }
+  .home-subtitle  { color: var(--ink-light); font-size: 14px; margin-bottom: 40px; font-weight: 300; }
+
+  .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+
+  .action-card {
+    background: var(--paper-dark);
+    border: 1.5px solid var(--paper-darker);
+    border-radius: 12px;
+    padding: 24px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  .action-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: var(--card-color, var(--gold));
+  }
+  .action-card:hover { border-color: var(--card-color, var(--gold)); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .action-card .card-icon  { font-size: 28px; margin-bottom: 10px; display: block; }
+  .action-card .card-title { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 4px; }
+  .action-card .card-desc  { font-size: 12px; color: var(--ink-light); font-weight: 300; }
+  .action-card .card-count { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: var(--card-color, var(--gold)); margin-top: 8px; }
+
+  .action-card.lessons { --card-color: var(--gold); }
+  .action-card.reviews { --card-color: var(--blue); }
+  .action-card.browse  { --card-color: var(--blue); grid-column: span 2; }
+
+  /* ── SRS PROGRESS BAR (home) ─────────────────────────────────── */
+  .progress-section {
+    background: var(--paper-dark); border: 1.5px solid var(--paper-darker);
+    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+  }
+  .progress-section h3 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-light); margin-bottom: 14px; font-weight: 500;
+  }
+  .srs-levels { display: flex; gap: 8px; }
+  .srs-level  { flex: 1; text-align: center; }
+  .srs-level-bar  { height: 8px; border-radius: 4px; background: var(--paper-dark); margin-bottom: 4px; position: relative; overflow: hidden; }
+  .srs-level-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width 0.5s ease; }
+  .srs-level-label { font-size: 10px; color: var(--ink-light); font-family: 'DM Mono', monospace; }
+
+  /* ── LESSON CARD ─────────────────────────────────────────────── */
+  .lesson-card {
+    background: var(--paper-dark);
+    border: 1.5px solid var(--paper-darker);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .lesson-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px; background: linear-gradient(90deg, var(--stage-color, var(--gold)), transparent);
+  }
+
+  /* Stage badge shared by lesson + quiz + pretest */
+  .stage-badge {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 500;
+    padding: 4px 12px; border-radius: 20px; margin-bottom: 32px;
+    background: color-mix(in srgb, var(--stage-color, var(--gold)) 15%, transparent);
+    color: var(--stage-color, var(--gold));
+    border: 1px solid color-mix(in srgb, var(--stage-color, var(--gold)) 30%, transparent);
+  }
+
+  /* Large word display in lesson */
+  .word-display {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(44px, 11vw, 90px);
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 12px;
+    text-shadow: 2px 4px 16px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+  }
+  .word-display:hover { transform: scale(1.04); }
+
+  .word-kana {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 22px; color: var(--ink-light);
+    margin-bottom: 8px; letter-spacing: 0.05em;
+  }
+  .word-romaji {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px; color: var(--ink-light);
+    margin-bottom: 20px; opacity: 0.7;
+  }
+  .lesson-meaning {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px; color: var(--ink); margin-bottom: 12px;
+  }
+  .lesson-meaning-sub {
+    font-size: 13px; color: var(--ink-light);
+    font-weight: 300; font-style: italic;
+  }
+
+  /* ── QUIZ SCREEN ─────────────────────────────────────────────── */
+  .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .quiz-progress-bar { flex: 1; height: 4px; background: var(--paper-dark); border-radius: 2px; margin: 0 16px; overflow: hidden; }
+  .quiz-progress-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+  .quiz-count { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--ink-light); }
+
+  .quiz-card {
+    background: var(--paper-dark);
+    border: 1.5px solid var(--paper-darker);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    text-align: center;
+    margin-bottom: 16px;
+    position: relative; overflow: hidden;
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 0;
+  }
+  .quiz-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px; background: var(--stage-color, var(--gold));
+  }
+
+  /* Word shown during quiz */
+  .quiz-word {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(38px, 9vw, 80px);
+    line-height: 1.1; color: var(--ink);
+    margin-bottom: 12px; text-shadow: 2px 4px 16px rgba(0,0,0,0.08);
+  }
+  /* Kana shown below quiz word (always visible so user knows what word it is) */
+  .quiz-word-kana {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 18px; color: var(--ink-light);
+    margin-bottom: 20px; letter-spacing: 0.04em;
+  }
+  /* For reading quiz — kana is the prompt so hidden until answer revealed */
+  .quiz-word-kana.hidden { visibility: hidden; }
+
+  .quiz-prompt { font-size: 13px; color: var(--ink-light); margin-bottom: 28px; font-weight: 300; }
+
+  /* ── MULTIPLE CHOICE ────────────────────────────────────────── */
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; }
+  .choice-btn {
+    padding: 14px 16px;
+    border: 1.5px solid var(--paper-darker);
+    border-radius: 10px;
+    background: var(--paper-dark);
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px; color: var(--ink);
+    transition: border-color 0.15s;
+    text-align: center; font-weight: 400;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; -webkit-user-select: none;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--gold); }
+  .choice-btn.correct { background: color-mix(in srgb, var(--green) 20%, var(--paper-dark)); border-color: var(--green); color: var(--green-light); }
+  .choice-btn.wrong   { background: color-mix(in srgb, var(--red)   20%, var(--paper-dark)); border-color: var(--red);   color: var(--red-light); }
+
+  /* ── TEXT INPUT (reading quiz) ──────────────────────────────── */
+  .input-area { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+  .kana-preview { font-family: 'Noto Sans JP', sans-serif; font-size: 28px; color: var(--ink); min-height: 40px; letter-spacing: 0.05em; }
+  .kana-preview.placeholder { color: var(--paper-darker); font-size: 18px; }
+
+  .romaji-input {
+    width: 100%; padding: 14px 20px;
+    border: 2px solid var(--paper-darker);
+    border-radius: 10px; background: var(--paper-dark);
+    font-family: 'DM Mono', monospace; font-size: 18px;
+    color: var(--ink); text-align: center; outline: none;
+    transition: border-color 0.4s, background 0.4s;
+    letter-spacing: 0.05em;
+  }
+  .romaji-input.correct { border-color: var(--green); background: color-mix(in srgb, var(--green) 5%, var(--paper)); }
+  .romaji-input.wrong   { border-color: var(--red);   background: color-mix(in srgb, var(--red)   5%, var(--paper)); }
+
+  .submit-btn {
+    padding: 12px 40px;
+    background: var(--stage-color, var(--gold));
+    color: white; border: none; border-radius: 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.03em;
+  }
+  .submit-btn:hover  { filter: brightness(1.1); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  /* ── REVIEW / RESULT SCREEN ─────────────────────────────────── */
+  .review-screen {
+    background: var(--paper-dark); border: 1.5px solid var(--paper-darker);
+    border-radius: 16px; padding: 40px;
+    flex: 1; display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+  .review-result-banner { position: absolute; top: 0; left: 0; right: 0; height: 5px; }
+  .review-result-banner.correct-banner { background: var(--green); }
+  .review-result-banner.wrong-banner   { background: var(--red); }
+
+  .review-result-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
+    font-weight: 600; margin-bottom: 24px; padding-top: 8px;
+  }
+  .review-result-label.correct-label { color: var(--green); }
+  .review-result-label.wrong-label   { color: var(--red); }
+
+  .review-word-big {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(48px, 10vw, 80px);
+    color: var(--ink); text-align: center; margin-bottom: 6px; line-height: 1.1;
+  }
+  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 4px; }
+  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 4px; }
+
+  .review-stage-row { display: flex; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--paper-darker); flex-wrap: wrap; }
+  .review-stage-row:last-of-type { border-bottom: none; }
+  .review-divider { border: none; border-top: 1px solid var(--paper-dark); margin: 20px 0; }
+
+  .your-answer-line { font-size: 13px; color: var(--ink-light); margin-bottom: 4px; }
+  .your-answer-line span { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .your-answer-line span.wrong-answer   { color: var(--red); }
+  .your-answer-line span.correct-answer { color: var(--green); }
+
+  .next-btn {
+    margin-top: auto; padding: 14px;
+    background: var(--paper-darker); color: var(--ink);
+    border: 1px solid var(--paper-darker); border-radius: 10px;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em;
+  }
+  .next-btn:hover { background: #3a3530; transform: translateY(-1px); }
+
+  /* ── BROWSE SCREEN ──────────────────────────────────────────── */
+  .browse-grid { margin-top: 16px; }
+
+  .browse-group { margin-bottom: 8px; border: 1.5px solid var(--paper-darker); border-radius: 10px; overflow: hidden; }
+  .browse-group-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+    background: var(--paper-dark); transition: background 0.15s;
+  }
+  .browse-group-header:hover { background: var(--paper-darker); }
+  .browse-group-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-light); font-weight: 600; }
+  .browse-group-meta  { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--ink-light); }
+  .browse-group-chevron { font-size: 10px; transition: transform 0.2s; }
+  .browse-group-chevron.open { transform: rotate(180deg); }
+
+  .browse-group-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px; padding: 12px; background: var(--paper);
+  }
+  .browse-group-grid.open { display: grid; }
+
+  /* Word card tile in browse */
+  .browse-word-card {
+    background: var(--paper-dark); border: 1.5px solid var(--paper-darker);
+    border-radius: 10px; padding: 10px 8px; text-align: center;
+    cursor: pointer; transition: all 0.15s; position: relative;
+  }
+  .browse-word-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+  .browse-word-char {
+    font-family: 'Noto Serif JP', serif; font-size: 17px;
+    display: block; margin-bottom: 4px; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .browse-word-meaning { font-size: 9px; color: var(--ink-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .browse-level        { font-size: 10px; font-weight: 600; margin-top: 3px; font-family: 'DM Mono', monospace; text-align: center; }
+  .browse-level-locked { font-size: 10px; color: var(--paper-darker); margin-top: 3px; text-align: center; }
+
+  /* Browse progress bar */
+  .browse-progress-wrap  { background: var(--paper-darker); border-radius: 999px; height: 10px; overflow: hidden; margin: 0 0 4px 0; }
+  .browse-progress-fill  { height: 100%; border-radius: 999px; background: var(--gold); transition: width 0.4s ease; }
+  .browse-progress-label { font-size: 12px; color: var(--ink-light); margin-bottom: 12px; }
+
+  /* ── WORD DETAIL MODAL ──────────────────────────────────────── */
+  .kanji-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 100;
+    align-items: flex-end; justify-content: center;
+  }
+  .kanji-modal-overlay.open { display: flex; }
+
+  .kanji-modal {
+    background: var(--paper-dark); border: 1.5px solid var(--paper-darker);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 24px 40px;
+    width: 100%; max-width: 700px; max-height: 85vh; overflow-y: auto;
+    animation: slideUpModal 0.25s ease;
+  }
+  @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .kanji-modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .kanji-modal-word   { font-family: 'Noto Serif JP', serif; font-size: clamp(40px, 8vw, 64px); line-height: 1.1; color: var(--ink); }
+  .kanji-modal-kana   { font-family: 'Noto Sans JP', sans-serif; font-size: 18px; color: var(--ink-light); margin-top: 4px; }
+  .kanji-modal-close  {
+    background: var(--paper-darker); border: none; border-radius: 50%;
+    width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+    color: var(--ink-light); display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+  }
+  .kanji-modal-meanings { font-size: 15px; color: var(--ink); margin-bottom: 16px; font-weight: 500; }
+  .kanji-modal-romaji   { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--ink-light); margin-bottom: 16px; }
+  .kanji-modal-level    {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    font-size: 12px; font-family: 'DM Mono', monospace;
+    background: var(--paper-darker); color: var(--gold); font-weight: 600; margin-bottom: 20px;
+  }
+  .kanji-modal-section-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-light); margin-bottom: 6px; font-weight: 600;
+  }
+
+  /* ── COMPLETE SCREEN ────────────────────────────────────────── */
+  .complete-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; }
+  .complete-kanji  { font-family: 'Noto Serif JP', serif; font-size: 80px; color: var(--gold); animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .complete-title    { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--ink); }
+  .complete-subtitle { color: var(--ink-light); font-size: 15px; font-weight: 300; max-width: 300px; }
+  .complete-stats { display: flex; gap: 24px; margin: 16px 0; }
+  .complete-stat  { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .complete-stat-value { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; }
+  .complete-stat-label { font-size: 11px; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* ── BACK BUTTON ────────────────────────────────────────────── */
+  .back-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-light); font-size: 13px;
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 16px; padding: 0;
+    font-family: 'Noto Sans JP', sans-serif; transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--ink); }
+
+  /* ── ANIMATIONS ─────────────────────────────────────────────── */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  @keyframes flashCorrect {
+    0%, 100% { background-color: var(--paper-dark); }
+    40%      { background-color: color-mix(in srgb, var(--green) 20%, var(--paper-dark)); }
+  }
+  @keyframes flashWrong {
+    0%, 100% { background-color: var(--paper-dark); }
+    40%      { background-color: color-mix(in srgb, var(--red) 20%, var(--paper-dark)); }
+  }
+
+  .animate-in   { animation: slideUp 0.3s ease; }
+  .shake        { animation: shake 0.4s ease; }
+  .flash-correct { animation: flashCorrect 0.6s ease; }
+  .flash-wrong   { animation: flashWrong   0.6s ease; }
+
+  /* Stage colour helpers */
+  .stage-meaning { --stage-color: var(--stage-meaning); }
+  .stage-reading { --stage-color: var(--stage-reading); }
+
+  /* ── MOBILE ─────────────────────────────────────────────────── */
+  @media (max-width: 480px) {
+    .action-cards { grid-template-columns: 1fr; }
+    .action-card.browse { grid-column: span 1; }
+    .choices { grid-template-columns: 1fr; }
+    .word-display { font-size: clamp(36px, 10vw, 64px); }
+    .lesson-card { padding: 32px 20px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">墨 <span>Sumi</span></div>
+    <div class="header-stats">
+      <div class="stat-item"><span class="stat-value" id="stat-lessons">0</span><span>lessons</span></div>
+      <div class="stat-item"><span class="stat-value" id="stat-reviews">0</span><span>reviews</span></div>
+      <div class="stat-item"><span class="stat-value" id="stat-mastered">0</span><span>mastered</span></div>
+    </div>
+  </header>
+
+  <!-- ── HOME ────────────────────────────────────────────────── -->
+  <div class="screen active" id="screen-home">
+    <div class="home-greeting">Good <span id="time-greeting">day</span>.</div>
+    <div class="home-subtitle">Continue your Japanese vocabulary journey.</div>
+
+    <!-- Pretest banner -->
+    <div id="pretest-banner" style="display:none; margin-bottom:16px;">
+      <div class="action-card" onclick="startPretest()"
+           style="--card-color:var(--red); grid-column:span 2;
+                  background:color-mix(in srgb,var(--red) 10%,var(--paper-dark));">
+        <span class="card-icon">🎯</span>
+        <div class="card-title" id="pretest-banner-title">Pretest — Already know some words?</div>
+        <div class="card-desc">Test yourself to skip ahead. Fast-tracks known words to Level 6, freeing lesson slots for new ones.</div>
+      </div>
+    </div>
+
+    <div class="action-cards">
+      <div class="action-card lessons" onclick="startLessons()">
+        <span class="card-icon">🌱</span>
+        <div class="card-title">Lessons</div>
+        <div class="card-desc">Learn new words</div>
+        <div class="card-count" id="home-lesson-count">0</div>
+      </div>
+      <div class="action-card reviews" onclick="startReviews()">
+        <span class="card-icon">⚡</span>
+        <div class="card-title">Reviews</div>
+        <div class="card-desc">Practice due cards</div>
+        <div class="card-count" id="home-review-count">0</div>
+      </div>
+      <div class="action-card browse" onclick="showBrowse()">
+        <span class="card-icon">🔍</span>
+        <div class="card-title">Browse Words</div>
+        <div class="card-desc">View all words and your progress</div>
+      </div>
+    </div>
+
+    <div class="progress-section" onclick="showSrsProgress()"
+         style="cursor:pointer;" title="View words by level">
+      <h3>SRS Progress <span style="font-size:11px;color:var(--ink-light);font-family:'DM Mono',monospace;">↗</span></h3>
+      <div class="srs-levels" id="srs-levels-display"></div>
+    </div>
+
+    <div style="text-align:center; margin-top:24px; padding-bottom:8px;">
+      <button onclick="confirmReset()"
+              style="background:none;border:none;color:var(--ink-light);font-size:12px;
+                     cursor:pointer;opacity:0.5;font-family:'Noto Sans JP',sans-serif;text-decoration:underline;">
+        Reset all progress
+      </button>
+    </div>
+  </div>
+
+  <!-- ── LESSON SCREEN ─────────────────────────────────────────── -->
+  <div class="screen" id="screen-lesson">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="lesson-card animate-in" id="lesson-card"><!-- filled dynamically --></div>
+    <div style="display:flex; gap:12px; margin-top:16px;">
+      <button class="submit-btn" id="lesson-prev-btn"
+              style="flex:1; background:var(--ink-light);" onclick="prevLesson()">← Previous</button>
+      <button class="submit-btn" id="lesson-next-btn"
+              style="flex:1;" onclick="nextLesson()">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── QUIZ SCREEN ───────────────────────────────────────────── -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <button class="back-btn" style="margin:0;" onclick="goHome()">← Quit</button>
+      <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+      </div>
+      <div class="quiz-count" id="quiz-count">0/0</div>
+    </div>
+    <div class="quiz-card animate-in stage-meaning" id="quiz-card"><!-- filled dynamically --></div>
+  </div>
+
+  <!-- ── REVIEW / RESULT SCREEN ───────────────────────────────── -->
+  <div class="screen" id="screen-review">
+    <div class="review-screen animate-in" id="review-content"><!-- filled dynamically --></div>
+  </div>
+
+  <!-- ── BROWSE SCREEN ────────────────────────────────────────── -->
+  <div class="screen" id="screen-browse">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <h2 style="font-family:'DM Serif Display',serif; margin-bottom:8px;">Word Library</h2>
+    <div class="browse-progress-wrap">
+      <div class="browse-progress-fill" id="browse-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="browse-progress-label" id="browse-progress-label">0 / 0 unlocked</div>
+    <div class="browse-grid" id="browse-grid"></div>
+  </div>
+
+  <!-- ── SRS PROGRESS SCREEN ──────────────────────────────────── -->
+  <div class="screen" id="screen-srs-progress">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <h2 style="font-family:'DM Serif Display',serif; margin-bottom:8px;">SRS Progress</h2>
+    <p style="font-size:13px; color:var(--ink-light); margin-bottom:12px;">Your unlocked words sorted by level.</p>
+    <div class="browse-grid" id="srs-progress-grid"></div>
+  </div>
+
+  <!-- ── WORD DETAIL MODAL ─────────────────────────────────────── -->
+  <div class="kanji-modal-overlay" id="kanji-modal-overlay" onclick="closeWordModal(event)">
+    <div class="kanji-modal" id="kanji-modal"><!-- filled dynamically --></div>
+  </div>
+
+  <!-- ── COMPLETE SCREEN ──────────────────────────────────────── -->
+  <div class="screen" id="screen-complete">
+    <div class="complete-screen">
+      <div class="complete-kanji">完</div>
+      <div class="complete-title" id="complete-title">Session Complete!</div>
+      <div class="complete-stats">
+        <div class="complete-stat">
+          <span class="complete-stat-value" id="complete-correct" style="color:var(--green)">0</span>
+          <span class="complete-stat-label">First Try ✓</span>
+        </div>
+        <div class="complete-stat">
+          <span class="complete-stat-value" id="complete-secondchance" style="color:var(--gold)">0</span>
+          <span class="complete-stat-label">Second Try ✓</span>
+        </div>
+        <div class="complete-stat">
+          <span class="complete-stat-value" id="complete-wrong" style="color:var(--red)">0</span>
+          <span class="complete-stat-label">Wrong ✗</span>
+        </div>
+      </div>
+      <div class="complete-subtitle" id="complete-subtitle">Great work! Keep up the practice.</div>
+      <button class="submit-btn" onclick="goHome()" style="margin-top:8px;">Return Home</button>
+    </div>
+  </div>
+
+  <!-- ── PRETEST SCREEN ───────────────────────────────────────── -->
+  <div class="screen" id="screen-pretest">
+    <div class="quiz-header">
+      <button class="back-btn" style="margin:0;" onclick="pretestGoHome()">← Back</button>
+      <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" id="pretest-progress-fill" style="background:var(--red)"></div>
+      </div>
+      <div class="quiz-count" id="pretest-count">0/0</div>
+    </div>
+    <div class="quiz-card animate-in" id="pretest-card" style="--stage-color:var(--red)"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;
+                width:100%; max-width:480px; margin-top:12px; padding:0 4px;">
+      <button onclick="skipPretestWord()"
+              style="background:none;border:none;color:var(--ink-light);font-size:13px;
+                     cursor:pointer;font-family:'Noto Sans JP',sans-serif;
+                     text-decoration:underline;opacity:0.6;-webkit-tap-highlight-color:transparent;">
+        Skip →
+      </button>
+      <button onclick="pretestGiveUp()"
+              style="background:none;border:none;color:var(--red);font-size:13px;
+                     cursor:pointer;font-family:'Noto Sans JP',sans-serif;
+                     text-decoration:underline;opacity:0.7;-webkit-tap-highlight-color:transparent;">
+        Give Up (end pretest)
+      </button>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ===================================================
+// WORD DATA — filled in last step
+// Each entry: { word, kana, romaji, meanings[], group }
+// ===================================================
+const WORD_DATA = [
+  // ── Greetings & Expressions ──────────────────────────────────
+  { word:'はい',          kana:'はい',           romaji:'hai',          meanings:['yes'],                                 group:'Greetings' },
+  { word:'いいえ',        kana:'いいえ',          romaji:'iie',          meanings:['no'],                                  group:'Greetings' },
+  { word:'ありがとう',    kana:'ありがとう',       romaji:'arigatou',     meanings:['thank you'],                           group:'Greetings' },
+  { word:'すみません',    kana:'すみません',       romaji:'sumimasen',    meanings:['excuse me', 'sorry'],                  group:'Greetings' },
+  { word:'ごめんなさい',  kana:'ごめんなさい',     romaji:'gomennasai',   meanings:["I'm sorry"],                           group:'Greetings' },
+  { word:'おはよう',      kana:'おはよう',         romaji:'ohayou',       meanings:['good morning'],                        group:'Greetings' },
+  { word:'こんにちは',    kana:'こんにちは',       romaji:'konnichiwa',   meanings:['hello', 'good afternoon'],             group:'Greetings' },
+  { word:'こんばんは',    kana:'こんばんは',       romaji:'konbanwa',     meanings:['good evening'],                        group:'Greetings' },
+  { word:'さようなら',    kana:'さようなら',       romaji:'sayounara',    meanings:['goodbye'],                             group:'Greetings' },
+  { word:'どうぞ',        kana:'どうぞ',           romaji:'douzo',        meanings:['please', 'go ahead', 'here you are'], group:'Greetings' },
+
+  // ── Pronouns ─────────────────────────────────────────────────
+  { word:'私',            kana:'わたし',           romaji:'watashi',      meanings:['I', 'me'],                             group:'Pronouns' },
+  { word:'あなた',        kana:'あなた',           romaji:'anata',        meanings:['you'],                                 group:'Pronouns' },
+  { word:'彼',            kana:'かれ',             romaji:'kare',         meanings:['he', 'him', 'boyfriend'],              group:'Pronouns' },
+  { word:'彼女',          kana:'かのじょ',          romaji:'kanojo',       meanings:['she', 'her', 'girlfriend'],            group:'Pronouns' },
+  { word:'私たち',        kana:'わたしたち',        romaji:'watashitachi', meanings:['we', 'us'],                            group:'Pronouns' },
+  { word:'みんな',        kana:'みんな',            romaji:'minna',        meanings:['everyone', 'all'],                     group:'Pronouns' },
+
+  // ── Question Words ────────────────────────────────────────────
+  { word:'何',            kana:'なに',             romaji:'nani',         meanings:['what'],                                group:'Question Words' },
+  { word:'誰',            kana:'だれ',             romaji:'dare',         meanings:['who'],                                 group:'Question Words' },
+  { word:'どこ',          kana:'どこ',             romaji:'doko',         meanings:['where'],                               group:'Question Words' },
+  { word:'いつ',          kana:'いつ',             romaji:'itsu',         meanings:['when'],                                group:'Question Words' },
+  { word:'なぜ',          kana:'なぜ',             romaji:'naze',         meanings:['why'],                                 group:'Question Words' },
+  { word:'どう',          kana:'どう',             romaji:'dou',          meanings:['how', 'in what way'],                  group:'Question Words' },
+  { word:'いくら',        kana:'いくら',            romaji:'ikura',        meanings:['how much'],                            group:'Question Words' },
+  { word:'どれ',          kana:'どれ',             romaji:'dore',         meanings:['which one'],                           group:'Question Words' },
+
+  // ── Core Verbs ────────────────────────────────────────────────
+  { word:'食べる',        kana:'たべる',            romaji:'taberu',       meanings:['to eat'],                              group:'Core Verbs' },
+  { word:'飲む',          kana:'のむ',             romaji:'nomu',         meanings:['to drink'],                            group:'Core Verbs' },
+  { word:'行く',          kana:'いく',             romaji:'iku',          meanings:['to go'],                               group:'Core Verbs' },
+  { word:'来る',          kana:'くる',             romaji:'kuru',         meanings:['to come'],                             group:'Core Verbs' },
+  { word:'帰る',          kana:'かえる',            romaji:'kaeru',        meanings:['to return home', 'to go back'],        group:'Core Verbs' },
+  { word:'見る',          kana:'みる',             romaji:'miru',         meanings:['to see', 'to watch'],                  group:'Core Verbs' },
+  { word:'聞く',          kana:'きく',             romaji:'kiku',         meanings:['to listen', 'to hear', 'to ask'],      group:'Core Verbs' },
+  { word:'話す',          kana:'はなす',            romaji:'hanasu',       meanings:['to speak', 'to talk'],                 group:'Core Verbs' },
+  { word:'読む',          kana:'よむ',             romaji:'yomu',         meanings:['to read'],                             group:'Core Verbs' },
+  { word:'書く',          kana:'かく',             romaji:'kaku',         meanings:['to write'],                            group:'Core Verbs' },
+  { word:'買う',          kana:'かう',             romaji:'kau',          meanings:['to buy'],                              group:'Core Verbs' },
+  { word:'使う',          kana:'つかう',            romaji:'tsukau',       meanings:['to use'],                              group:'Core Verbs' },
+  { word:'作る',          kana:'つくる',            romaji:'tsukuru',      meanings:['to make', 'to create'],                group:'Core Verbs' },
+  { word:'する',          kana:'する',             romaji:'suru',         meanings:['to do'],                               group:'Core Verbs' },
+  { word:'ある',          kana:'ある',             romaji:'aru',          meanings:['to exist', 'to have (thing)'],         group:'Core Verbs' },
+  { word:'いる',          kana:'いる',             romaji:'iru',          meanings:['to be', 'to exist (person/animal)'],   group:'Core Verbs' },
+  { word:'言う',          kana:'いう',             romaji:'iu',           meanings:['to say', 'to tell'],                   group:'Core Verbs' },
+  { word:'思う',          kana:'おもう',            romaji:'omou',         meanings:['to think', 'to feel'],                 group:'Core Verbs' },
+  { word:'知る',          kana:'しる',             romaji:'shiru',        meanings:['to know'],                             group:'Core Verbs' },
+  { word:'分かる',        kana:'わかる',            romaji:'wakaru',       meanings:['to understand'],                       group:'Core Verbs' },
+  { word:'見せる',        kana:'みせる',            romaji:'miseru',       meanings:['to show'],                             group:'Core Verbs' },
+  { word:'もらう',        kana:'もらう',            romaji:'morau',        meanings:['to receive', 'to get'],                group:'Core Verbs' },
+  { word:'あげる',        kana:'あげる',            romaji:'ageru',        meanings:['to give'],                             group:'Core Verbs' },
+  { word:'もつ',          kana:'もつ',             romaji:'motsu',        meanings:['to hold', 'to have', 'to carry'],      group:'Core Verbs' },
+
+  // ── Daily Life Verbs ──────────────────────────────────────────
+  { word:'できる',        kana:'できる',            romaji:'dekiru',       meanings:['to be able to', 'can'],                group:'Daily Life Verbs' },
+  { word:'なる',          kana:'なる',             romaji:'naru',         meanings:['to become'],                           group:'Daily Life Verbs' },
+  { word:'会う',          kana:'あう',             romaji:'au',           meanings:['to meet'],                             group:'Daily Life Verbs' },
+  { word:'待つ',          kana:'まつ',             romaji:'matsu',        meanings:['to wait'],                             group:'Daily Life Verbs' },
+  { word:'住む',          kana:'すむ',             romaji:'sumu',         meanings:['to live', 'to reside'],                group:'Daily Life Verbs' },
+  { word:'働く',          kana:'はたらく',          romaji:'hataraku',     meanings:['to work'],                             group:'Daily Life Verbs' },
+  { word:'勉強する',      kana:'べんきょうする',     romaji:'benkyousuru',  meanings:['to study'],                            group:'Daily Life Verbs' },
+  { word:'寝る',          kana:'ねる',             romaji:'neru',         meanings:['to sleep', 'to go to bed'],            group:'Daily Life Verbs' },
+  { word:'起きる',        kana:'おきる',            romaji:'okiru',        meanings:['to wake up', 'to get up'],             group:'Daily Life Verbs' },
+  { word:'入る',          kana:'はいる',            romaji:'hairu',        meanings:['to enter'],                            group:'Daily Life Verbs' },
+  { word:'出る',          kana:'でる',             romaji:'deru',         meanings:['to exit', 'to leave'],                 group:'Daily Life Verbs' },
+  { word:'走る',          kana:'はしる',            romaji:'hashiru',      meanings:['to run'],                              group:'Daily Life Verbs' },
+  { word:'歩く',          kana:'あるく',            romaji:'aruku',        meanings:['to walk'],                             group:'Daily Life Verbs' },
+  { word:'乗る',          kana:'のる',             romaji:'noru',         meanings:['to ride', 'to board'],                 group:'Daily Life Verbs' },
+  { word:'教える',        kana:'おしえる',          romaji:'oshieru',      meanings:['to teach', 'to tell'],                 group:'Daily Life Verbs' },
+  { word:'覚える',        kana:'おぼえる',          romaji:'oboeru',       meanings:['to remember', 'to memorize'],          group:'Daily Life Verbs' },
+  { word:'忘れる',        kana:'わすれる',          romaji:'wasureru',     meanings:['to forget'],                           group:'Daily Life Verbs' },
+  { word:'開ける',        kana:'あける',            romaji:'akeru',        meanings:['to open'],                             group:'Daily Life Verbs' },
+  { word:'閉める',        kana:'しめる',            romaji:'shimeru',      meanings:['to close', 'to shut'],                 group:'Daily Life Verbs' },
+  { word:'洗う',          kana:'あらう',            romaji:'arau',         meanings:['to wash'],                             group:'Daily Life Verbs' },
+
+  // ── i-Adjectives ─────────────────────────────────────────────
+  { word:'大きい',        kana:'おおきい',          romaji:'ookii',        meanings:['big', 'large'],                        group:'Adjectives' },
+  { word:'小さい',        kana:'ちいさい',          romaji:'chiisai',      meanings:['small', 'little'],                     group:'Adjectives' },
+  { word:'良い',          kana:'よい',             romaji:'yoi',          meanings:['good', 'fine'],                        group:'Adjectives' },
+  { word:'悪い',          kana:'わるい',            romaji:'warui',        meanings:['bad', 'wrong'],                        group:'Adjectives' },
+  { word:'高い',          kana:'たかい',            romaji:'takai',        meanings:['tall', 'expensive', 'high'],           group:'Adjectives' },
+  { word:'低い',          kana:'ひくい',            romaji:'hikui',        meanings:['low', 'short (height)'],               group:'Adjectives' },
+  { word:'長い',          kana:'ながい',            romaji:'nagai',        meanings:['long'],                                group:'Adjectives' },
+  { word:'短い',          kana:'みじかい',          romaji:'mijikai',      meanings:['short (length)'],                      group:'Adjectives' },
+  { word:'多い',          kana:'おおい',            romaji:'ooi',          meanings:['many', 'much', 'a lot'],               group:'Adjectives' },
+  { word:'少ない',        kana:'すくない',          romaji:'sukunai',      meanings:['few', 'little', 'scarce'],             group:'Adjectives' },
+  { word:'新しい',        kana:'あたらしい',         romaji:'atarashii',    meanings:['new'],                                 group:'Adjectives' },
+  { word:'古い',          kana:'ふるい',            romaji:'furui',        meanings:['old', 'used'],                         group:'Adjectives' },
+  { word:'暑い',          kana:'あつい',            romaji:'atsui',        meanings:['hot (weather)'],                       group:'Adjectives' },
+  { word:'寒い',          kana:'さむい',            romaji:'samui',        meanings:['cold (weather)'],                      group:'Adjectives' },
+  { word:'速い',          kana:'はやい',            romaji:'hayai',        meanings:['fast', 'quick'],                       group:'Adjectives' },
+  { word:'面白い',        kana:'おもしろい',         romaji:'omoshiroi',    meanings:['interesting', 'funny'],                group:'Adjectives' },
+  { word:'難しい',        kana:'むずかしい',         romaji:'muzukashii',   meanings:['difficult', 'hard'],                   group:'Adjectives' },
+  { word:'楽しい',        kana:'たのしい',          romaji:'tanoshii',     meanings:['fun', 'enjoyable'],                    group:'Adjectives' },
+  { word:'忙しい',        kana:'いそがしい',         romaji:'isogashii',    meanings:['busy'],                                group:'Adjectives' },
+  { word:'嬉しい',        kana:'うれしい',          romaji:'ureshii',      meanings:['happy', 'glad'],                       group:'Adjectives' },
+  { word:'好き',          kana:'すき',             romaji:'suki',         meanings:['liked', 'favourite'],                  group:'Adjectives' },
+  { word:'嫌い',          kana:'きらい',            romaji:'kirai',        meanings:['disliked'],                            group:'Adjectives' },
+  { word:'元気',          kana:'げんき',            romaji:'genki',        meanings:['healthy', 'energetic', 'fine'],        group:'Adjectives' },
+  { word:'大丈夫',        kana:'だいじょうぶ',       romaji:'daijoubu',     meanings:['OK', 'all right', 'no problem'],       group:'Adjectives' },
+  { word:'簡単',          kana:'かんたん',          romaji:'kantan',       meanings:['easy', 'simple'],                      group:'Adjectives' },
+  { word:'静か',          kana:'しずか',            romaji:'shizuka',      meanings:['quiet', 'calm'],                       group:'Adjectives' },
+  { word:'大切',          kana:'たいせつ',          romaji:'taisetsu',     meanings:['important', 'precious'],               group:'Adjectives' },
+  { word:'便利',          kana:'べんり',            romaji:'benri',        meanings:['convenient', 'useful'],                group:'Adjectives' },
+
+  // ── Time & Dates ──────────────────────────────────────────────
+  { word:'今',            kana:'いま',             romaji:'ima',          meanings:['now'],                                 group:'Time & Dates' },
+  { word:'今日',          kana:'きょう',            romaji:'kyou',         meanings:['today'],                               group:'Time & Dates' },
+  { word:'明日',          kana:'あした',            romaji:'ashita',       meanings:['tomorrow'],                            group:'Time & Dates' },
+  { word:'昨日',          kana:'きのう',            romaji:'kinou',        meanings:['yesterday'],                           group:'Time & Dates' },
+  { word:'朝',            kana:'あさ',             romaji:'asa',          meanings:['morning'],                             group:'Time & Dates' },
+  { word:'昼',            kana:'ひる',             romaji:'hiru',         meanings:['noon', 'daytime'],                     group:'Time & Dates' },
+  { word:'夜',            kana:'よる',             romaji:'yoru',         meanings:['night', 'evening'],                    group:'Time & Dates' },
+  { word:'毎日',          kana:'まいにち',          romaji:'mainichi',     meanings:['every day'],                           group:'Time & Dates' },
+  { word:'時間',          kana:'じかん',            romaji:'jikan',        meanings:['time', 'hour'],                        group:'Time & Dates' },
+  { word:'来週',          kana:'らいしゅう',         romaji:'raishuu',      meanings:['next week'],                           group:'Time & Dates' },
+  { word:'先週',          kana:'せんしゅう',         romaji:'senshuu',      meanings:['last week'],                           group:'Time & Dates' },
+  { word:'今週',          kana:'こんしゅう',         romaji:'konshuu',      meanings:['this week'],                           group:'Time & Dates' },
+  { word:'来年',          kana:'らいねん',          romaji:'rainen',       meanings:['next year'],                           group:'Time & Dates' },
+  { word:'去年',          kana:'きょねん',          romaji:'kyonen',       meanings:['last year'],                           group:'Time & Dates' },
+
+  // ── People & Relationships ────────────────────────────────────
+  { word:'人',            kana:'ひと',             romaji:'hito',         meanings:['person', 'people'],                    group:'People' },
+  { word:'友達',          kana:'ともだち',          romaji:'tomodachi',    meanings:['friend'],                              group:'People' },
+  { word:'先生',          kana:'せんせい',          romaji:'sensei',       meanings:['teacher'],                             group:'People' },
+  { word:'学生',          kana:'がくせい',          romaji:'gakusei',      meanings:['student'],                             group:'People' },
+  { word:'家族',          kana:'かぞく',            romaji:'kazoku',       meanings:['family'],                              group:'People' },
+  { word:'子供',          kana:'こども',            romaji:'kodomo',       meanings:['child', 'children'],                   group:'People' },
+  { word:'男',            kana:'おとこ',            romaji:'otoko',        meanings:['man', 'male'],                         group:'People' },
+  { word:'女',            kana:'おんな',            romaji:'onna',         meanings:['woman', 'female'],                     group:'People' },
+  { word:'親',            kana:'おや',             romaji:'oya',          meanings:['parent'],                              group:'People' },
+  { word:'兄弟',          kana:'きょうだい',         romaji:'kyoudai',      meanings:['siblings'],                            group:'People' },
+  { word:'お父さん',      kana:'おとうさん',         romaji:'otousan',      meanings:['father', 'dad'],                       group:'People' },
+  { word:'お母さん',      kana:'おかあさん',         romaji:'okaasan',      meanings:['mother', 'mum'],                       group:'People' },
+
+  // ── Places ────────────────────────────────────────────────────
+  { word:'学校',          kana:'がっこう',          romaji:'gakkou',       meanings:['school'],                              group:'Places' },
+  { word:'家',            kana:'いえ',             romaji:'ie',           meanings:['house', 'home'],                       group:'Places' },
+  { word:'駅',            kana:'えき',             romaji:'eki',          meanings:['train station'],                       group:'Places' },
+  { word:'店',            kana:'みせ',             romaji:'mise',         meanings:['shop', 'store'],                       group:'Places' },
+  { word:'病院',          kana:'びょういん',         romaji:'byouin',       meanings:['hospital'],                            group:'Places' },
+  { word:'会社',          kana:'かいしゃ',          romaji:'kaisha',       meanings:['company', 'workplace'],                group:'Places' },
+  { word:'図書館',        kana:'としょかん',         romaji:'toshokan',     meanings:['library'],                             group:'Places' },
+  { word:'公園',          kana:'こうえん',          romaji:'kouen',        meanings:['park'],                                group:'Places' },
+  { word:'銀行',          kana:'ぎんこう',          romaji:'ginkou',       meanings:['bank'],                                group:'Places' },
+  { word:'空港',          kana:'くうこう',          romaji:'kuukou',       meanings:['airport'],                             group:'Places' },
+  { word:'レストラン',    kana:'れすとらん',         romaji:'resutoran',    meanings:['restaurant'],                          group:'Places' },
+  { word:'トイレ',        kana:'といれ',            romaji:'toire',        meanings:['toilet', 'bathroom'],                  group:'Places' },
+
+  // ── Food & Drink ──────────────────────────────────────────────
+  { word:'ご飯',          kana:'ごはん',            romaji:'gohan',        meanings:['rice', 'meal'],                        group:'Food & Drink' },
+  { word:'水',            kana:'みず',             romaji:'mizu',         meanings:['water'],                               group:'Food & Drink' },
+  { word:'お茶',          kana:'おちゃ',            romaji:'ocha',         meanings:['tea'],                                 group:'Food & Drink' },
+  { word:'肉',            kana:'にく',             romaji:'niku',         meanings:['meat'],                                group:'Food & Drink' },
+  { word:'魚',            kana:'さかな',            romaji:'sakana',       meanings:['fish'],                                group:'Food & Drink' },
+  { word:'パン',          kana:'ぱん',             romaji:'pan',          meanings:['bread'],                               group:'Food & Drink' },
+  { word:'野菜',          kana:'やさい',            romaji:'yasai',        meanings:['vegetables'],                          group:'Food & Drink' },
+  { word:'果物',          kana:'くだもの',          romaji:'kudamono',     meanings:['fruit'],                               group:'Food & Drink' },
+  { word:'卵',            kana:'たまご',            romaji:'tamago',       meanings:['egg'],                                 group:'Food & Drink' },
+  { word:'牛乳',          kana:'ぎゅうにゅう',       romaji:'gyuunyuu',     meanings:['milk'],                                group:'Food & Drink' },
+  { word:'コーヒー',      kana:'こーひー',           romaji:'koohii',       meanings:['coffee'],                              group:'Food & Drink' },
+
+  // ── Everyday Objects ──────────────────────────────────────────
+  { word:'本',            kana:'ほん',             romaji:'hon',          meanings:['book'],                                group:'Objects' },
+  { word:'電車',          kana:'でんしゃ',          romaji:'densha',       meanings:['train'],                               group:'Objects' },
+  { word:'車',            kana:'くるま',            romaji:'kuruma',       meanings:['car'],                                 group:'Objects' },
+  { word:'電話',          kana:'でんわ',            romaji:'denwa',        meanings:['telephone', 'phone'],                  group:'Objects' },
+  { word:'お金',          kana:'おかね',            romaji:'okane',        meanings:['money'],                               group:'Objects' },
+  { word:'時計',          kana:'とけい',            romaji:'tokei',        meanings:['clock', 'watch'],                      group:'Objects' },
+  { word:'鍵',            kana:'かぎ',             romaji:'kagi',         meanings:['key', 'lock'],                         group:'Objects' },
+  { word:'荷物',          kana:'にもつ',            romaji:'nimotsu',      meanings:['luggage', 'baggage'],                  group:'Objects' },
+  { word:'写真',          kana:'しゃしん',          romaji:'shashin',      meanings:['photo', 'photograph'],                 group:'Objects' },
+  { word:'新聞',          kana:'しんぶん',          romaji:'shinbun',      meanings:['newspaper'],                           group:'Objects' },
+
+  // ── Everyday Concepts ─────────────────────────────────────────
+  { word:'言葉',          kana:'ことば',            romaji:'kotoba',       meanings:['word', 'language'],                    group:'Concepts' },
+  { word:'名前',          kana:'なまえ',            romaji:'namae',        meanings:['name'],                                group:'Concepts' },
+  { word:'意味',          kana:'いみ',             romaji:'imi',          meanings:['meaning'],                             group:'Concepts' },
+  { word:'問題',          kana:'もんだい',          romaji:'mondai',       meanings:['problem', 'question'],                 group:'Concepts' },
+  { word:'仕事',          kana:'しごと',            romaji:'shigoto',      meanings:['work', 'job'],                         group:'Concepts' },
+  { word:'授業',          kana:'じゅぎょう',         romaji:'jugyou',       meanings:['class', 'lesson'],                     group:'Concepts' },
+  { word:'天気',          kana:'てんき',            romaji:'tenki',        meanings:['weather'],                             group:'Concepts' },
+  { word:'色',            kana:'いろ',             romaji:'iro',          meanings:['colour', 'color'],                     group:'Concepts' },
+  { word:'声',            kana:'こえ',             romaji:'koe',          meanings:['voice'],                               group:'Concepts' },
+  { word:'音',            kana:'おと',             romaji:'oto',          meanings:['sound', 'noise'],                      group:'Concepts' },
+  { word:'気持ち',        kana:'きもち',            romaji:'kimochi',      meanings:['feeling', 'mood'],                     group:'Concepts' },
+  { word:'気',            kana:'き',               romaji:'ki',           meanings:['spirit', 'feeling', 'energy'],         group:'Concepts' },
+  { word:'心',            kana:'こころ',            romaji:'kokoro',       meanings:['heart', 'mind'],                       group:'Concepts' },
+  { word:'夢',            kana:'ゆめ',             romaji:'yume',         meanings:['dream'],                               group:'Concepts' },
+  { word:'世界',          kana:'せかい',            romaji:'sekai',        meanings:['world'],                               group:'Concepts' },
+];
+
+// ===================================================
+// SRS ENGINE
+// ===================================================
+// Intervals in MINUTES
+const SRS_INTERVALS_MINS = [1, 30, 90, 720, 1440, 2880, 5760, 10080, 15120, 30240, 43200];
+// Level:                   0   1   2    3     4     5     6      7      8      9     10
+// Human:                  1m  30m 90m  12h    1d    2d    4d     1w   1.5w    3w    1mo
+
+const MAX_SRS_LEVEL    = 10;
+const UNLOCK_THRESHOLD = 5;   // both stages must reach this to free a new word slot
+const MASTER_THRESHOLD = 10;  // shown as "mastered"
+const PRETEST_LEVEL    = 6;   // fast-track target for passed pretest words
+const MAX_IN_PROGRESS  = 15;  // max words active at once
+
+// ── Card key ──────────────────────────────────────
+// Words are keyed by their display form (word field).
+// If two words share the same display form (unlikely but possible with kana-only
+// entries like ある/いる) we append the index as a tiebreaker.
+function cardKey(idx) {
+  const w = WORD_DATA[idx];
+  // Check for collision with any earlier entry
+  for (let i = 0; i < idx; i++) {
+    if (WORD_DATA[i].word === w.word) return w.word + '_' + idx;
+  }
+  return w.word;
+}
+
+// ── SRS helpers ───────────────────────────────────
+function srsLevelColor(lvl) {
+  const c = ['#a8d8a8','#8ecf90','#72c47a','#56b870','#3aaa82',
+             '#2e8a99','#2e6bb0','#3050c0','#5038b8','#6a28a8','#7a1898'];
+  return c[Math.min(Math.max(lvl, 0), 10)];
+}
+
+function formatNextReview(ms) {
+  const diff = ms - Date.now();
+  if (diff <= 0) return 'due now';
+  const mins = Math.round(diff / 60000);
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.round(diff / 3600000);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.round(diff / 86400000);
+  if (days < 14) return `${days}d`;
+  return `${Math.round(diff / 604800000)}w`;
+}
+
+function createCardState() {
+  return { level: 0, nextReview: 0, learning: false };
+}
+
+function isDue(card) {
+  return card.learning && card.nextReview <= Date.now();
+}
+
+// correct        = true  → first-attempt correct   → +1 level
+// secondChance   = true  → correct on second try   → −1 level (softer)
+// both false     = wrong on both                   → drop (≥5→4, else −2 min 0)
+function gradeCard(card, correct, secondChanceCorrect = false) {
+  if (!card.learning) return card;
+  const c = { ...card };
+  if (correct && !secondChanceCorrect) {
+    c.level = Math.min(c.level + 1, MAX_SRS_LEVEL);
+  } else if (correct && secondChanceCorrect) {
+    c.level = Math.max(0, c.level - 1);
+  } else {
+    c.level = c.level >= 5 ? 4 : Math.max(0, c.level - 2);
+  }
+  c.nextReview = Date.now() + (SRS_INTERVALS_MINS[c.level] || 1) * 60000;
+  return c;
+}
+
+function isMastered(card)     { return card.learning && card.level >= MASTER_THRESHOLD; }
+function isUnlockReady(card)  { return card.learning && card.level >= UNLOCK_THRESHOLD; }
+
+// A word is "unlock-ready" when BOTH stages have reached UNLOCK_THRESHOLD
+function isWordUnlockReady(idx) {
+  const c = state.cards[cardKey(idx)];
+  if (!c) return false;
+  return isUnlockReady(c.meaning) && isUnlockReady(c.reading);
+}
+
+function isWordMastered(idx) {
+  const c = state.cards[cardKey(idx)];
+  if (!c) return false;
+  return isMastered(c.meaning) && isMastered(c.reading);
+}
+
+// Display level = lowest active stage level (so progress feels honest)
+function wordDisplayLevel(idx) {
+  const c = state.cards[cardKey(idx)];
+  if (!c) return 0;
+  const ml = c.meaning.learning ? c.meaning.level : null;
+  const rl = c.reading.learning ? c.reading.level : null;
+  if (ml === null && rl === null) return 0;
+  if (ml === null) return rl;
+  if (rl === null) return ml;
+  return Math.min(ml, rl);
+}
+
+// ===================================================
+// STATE
+// ===================================================
+let state = {
+  cards: {},          // cardKey → { meaning: cardState, reading: cardState }
+  unlockedSet: new Set(),  // set of cardKeys that have been given a slot
+  pretestFailed: [],       // cardKeys permanently excluded from pretest
+  pretestDismissed: false,
+  wordHistory: {},         // key: "cardKey-stage" → array of recently used indices (unused here but kept for future)
+};
+
+function initState() {
+  const saved = localStorage.getItem('sumi_words_state');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      state = Object.assign({}, parsed, {
+        unlockedSet: new Set(Array.isArray(parsed.unlockedSet) ? parsed.unlockedSet : [])
+      });
+    } catch(e) {}
+  }
+
+  // ── Guard: rebuild unlockedSet from cards if missing ──
+  if (state.unlockedSet.size === 0 && Object.keys(state.cards).length > 0) {
+    state.unlockedSet = new Set(Object.keys(state.cards));
+  }
+  for (const k of Object.keys(state.cards)) state.unlockedSet.add(k);
+
+  // Remove stale keys (words removed from WORD_DATA)
+  const validKeys = new Set(WORD_DATA.map((_, i) => cardKey(i)));
+  const staleUnlocked = [...state.unlockedSet].filter(k => !validKeys.has(k));
+  staleUnlocked.forEach(k => state.unlockedSet.delete(k));
+  for (const k of Object.keys(state.cards)) {
+    if (!validKeys.has(k)) delete state.cards[k];
+  }
+
+  // Restore in-progress pretest
+  const savedPretest = localStorage.getItem('sumi_words_pretest');
+  if (savedPretest) {
+    try {
+      const p = JSON.parse(savedPretest);
+      pretest.queue      = p.queue;
+      pretest.pos        = p.pos;
+      pretest.stage      = p.stage;
+      pretest.results    = p.results;
+      pretest.fastTracked = p.fastTracked;
+      pretestInProgress  = true;
+    } catch(e) {}
+  }
+
+  // Seed first 5 words if completely fresh
+  if (state.unlockedSet.size === 0 && WORD_DATA.length > 0) {
+    const n = Math.min(5, WORD_DATA.length);
+    for (let i = 0; i < n; i++) {
+      const k = cardKey(i);
+      state.unlockedSet.add(k);
+      state.cards[k] = { meaning: createCardState(), reading: createCardState() };
+    }
+  }
+  saveState();
+}
+
+function saveState() {
+  const toSave = Object.assign({}, state, { unlockedSet: [...state.unlockedSet] });
+  localStorage.setItem('sumi_words_state', JSON.stringify(toSave));
+
+  if (pretestInProgress) {
+    localStorage.setItem('sumi_words_pretest', JSON.stringify({
+      queue: pretest.queue, pos: pretest.pos, stage: pretest.stage,
+      results: pretest.results, fastTracked: pretest.fastTracked,
+    }));
+  } else {
+    localStorage.removeItem('sumi_words_pretest');
+  }
+}
+
+// ── Unlock logic ───────────────────────────────────
+function getInProgressCount() {
+  let n = 0;
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    if (!isWordUnlockReady(i)) n++;
+  }
+  return n;
+}
+
+function tryUnlockNext() {
+  while (getInProgressCount() < MAX_IN_PROGRESS) {
+    const nextIdx = WORD_DATA.findIndex((_, i) => !state.unlockedSet.has(cardKey(i)));
+    if (nextIdx === -1) break;
+    const k = cardKey(nextIdx);
+    state.unlockedSet.add(k);
+    state.cards[k] = { meaning: createCardState(), reading: createCardState() };
+  }
+}
+
+// ===================================================
+// LESSON QUEUE
+// ===================================================
+// meaning lesson first; reading lesson unlocks once meaning >= level 2
+function getLessonQueue() {
+  const queue = [];
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    const c = state.cards[cardKey(i)];
+    if (!c) continue;
+    if (!c.meaning.learning) {
+      queue.push({ idx: i, stage: 'meaning' });
+    } else if (!c.reading.learning && c.meaning.level >= 2) {
+      queue.push({ idx: i, stage: 'reading' });
+    }
+  }
+  return queue;
+}
+
+// ===================================================
+// REVIEW QUEUE
+// ===================================================
+// Once both stages are learning, we group them (meaning then reading, reviewed together).
+// While only meaning is learning, it is reviewed solo.
+function allStagesLearning(idx) {
+  const c = state.cards[cardKey(idx)];
+  return c && c.meaning.learning && c.reading.learning;
+}
+
+function getReviewQueue() {
+  const soloItems    = [];
+  const groupedWords = [];
+
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    const c = state.cards[cardKey(i)];
+    if (!c) continue;
+
+    if (allStagesLearning(i)) {
+      const anyDue = isDue(c.meaning) || isDue(c.reading);
+      if (anyDue) groupedWords.push(i);
+    } else {
+      // Solo meaning (reading lesson not yet started)
+      const readingPendingLesson = !c.reading.learning && c.meaning.level >= 2;
+      if (isDue(c.meaning) && !readingPendingLesson) soloItems.push({ idx: i, stage: 'meaning' });
+      if (isDue(c.reading)) soloItems.push({ idx: i, stage: 'reading' });
+    }
+  }
+
+  // Shuffle solos
+  for (let i = soloItems.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [soloItems[i], soloItems[j]] = [soloItems[j], soloItems[i]];
+  }
+
+  // Shuffle groups then expand to meaning → reading pairs
+  for (let i = groupedWords.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [groupedWords[i], groupedWords[j]] = [groupedWords[j], groupedWords[i]];
+  }
+  const groupItems = [];
+  for (const idx of groupedWords) {
+    groupItems.push({ idx, stage: 'meaning' });
+    groupItems.push({ idx, stage: 'reading' });
+  }
+
+  return [...soloItems, ...groupItems];
+}
+
+function getReviewCount() {
+  let n = 0;
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    const c = state.cards[cardKey(i)];
+    if (!c) continue;
+    if (allStagesLearning(i)) {
+      if (isDue(c.meaning) || isDue(c.reading)) n++;
+    } else {
+      const readingPendingLesson = !c.reading.learning && c.meaning.level >= 2;
+      if (isDue(c.meaning) && !readingPendingLesson) n++;
+      if (isDue(c.reading)) n++;
+    }
+  }
+  return n;
+}
+
+// ===================================================
+// GRADING (grouped + solo)
+// ===================================================
+function gradeCurrentCard(wasCorrect) {
+  const item = session.item;
+  const idx  = item.idx;
+  const c    = state.cards[cardKey(idx)];
+  const secondChance = session.usedSecondChance || false;
+  session.usedSecondChance = false;
+
+  if (allStagesLearning(idx)) {
+    // ── Grouped: buffer result; apply once both stages answered ──
+    if (!session.groupResults) session.groupResults = {};
+    if (!session.groupResults[idx]) session.groupResults[idx] = { stages: {}, worstChance: false, demoted: false };
+    const gr = session.groupResults[idx];
+    gr.stages[item.stage] = wasCorrect;
+    if (!wasCorrect || secondChance) gr.worstChance = true;
+
+    const stagesInQueue = new Set(
+      session.queue.map(it => it.idx === idx ? it.stage : null).filter(Boolean)
+    );
+    const expected = ['meaning', 'reading'].filter(s => stagesInQueue.has(s));
+    if (expected.length === 0) {
+      // Fallback: treat as solo
+      if (wasCorrect) session.correct++; else session.wrong++;
+      state.cards[cardKey(idx)][item.stage] = gradeCard(c[item.stage], wasCorrect, secondChance);
+      tryUnlockNext(); saveState(); return;
+    }
+
+    if (!wasCorrect) {
+      const lowestLevel = wordDisplayLevel(idx);
+      const graded = gradeCard({ ...c.meaning, level: lowestLevel }, false, false);
+      c.meaning  = { ...c.meaning,  level: graded.level, nextReview: graded.nextReview };
+      c.reading  = { ...c.reading,  level: graded.level, nextReview: graded.nextReview };
+      gr.demoted = true;
+      session.wrong++;
+    } else {
+      const allAnswered = expected.every(s => s in gr.stages);
+      if (allAnswered) {
+        const baseLevel = wordDisplayLevel(idx);
+        let newLevel, newNextReview;
+        if (gr.worstChance) {
+          newLevel      = Math.max(0, baseLevel - 1);
+          newNextReview = Date.now() + (SRS_INTERVALS_MINS[newLevel] || 1) * 60000;
+        } else {
+          const graded  = gradeCard({ ...c.meaning, level: baseLevel }, true, false);
+          newLevel      = graded.level;
+          newNextReview = graded.nextReview;
+        }
+        c.meaning = { ...c.meaning, level: newLevel, nextReview: newNextReview };
+        c.reading = { ...c.reading, level: newLevel, nextReview: newNextReview };
+        if (gr.worstChance) session.secondChance++;
+        else session.correct++;
+      }
+      // else: still waiting for the other stage
+    }
+  } else {
+    // ── Solo staged card ──
+    if (wasCorrect && !secondChance) session.correct++;
+    else if (wasCorrect && secondChance) session.secondChance++;
+    else session.wrong++;
+    state.cards[cardKey(idx)][item.stage] = gradeCard(c[item.stage], wasCorrect, secondChance);
+  }
+
+  tryUnlockNext();
+  saveState();
+}
+
+function shouldShowReview() {
+  const item = session.item;
+  const idx  = item.idx;
+  if (!allStagesLearning(idx)) return true;
+  const gr = session.groupResults && session.groupResults[idx];
+  if (!gr) return true;
+  if (gr.demoted) return true;
+  const stagesInQueue = new Set(
+    session.queue.map(it => it.idx === idx ? it.stage : null).filter(Boolean)
+  );
+  const expected = ['meaning', 'reading'].filter(s => stagesInQueue.has(s));
+  return expected.every(s => s in gr.stages);
+}
+
+// ===================================================
+// ROMAJI → KANA CONVERSION  (shared with original app)
+// ===================================================
+function toHiragana(romaji) {
+  const map = [
+    ['tchi','っち'],['sshi','っし'],['ttsu','っつ'],
+    ['kka','っか'],['kki','っき'],['kku','っく'],['kke','っけ'],['kko','っこ'],
+    ['ssa','っさ'],['ssi','っし'],['ssu','っす'],['sse','っせ'],['sso','っそ'],
+    ['tta','った'],['tti','っち'],['tte','って'],['tto','っと'],
+    ['ppa','っぱ'],['ppi','っぴ'],['ppu','っぷ'],['ppe','っぺ'],['ppo','っぽ'],
+    ['chi','ち'],['shi','し'],['tsu','つ'],
+    ['kya','きゃ'],['kyu','きゅ'],['kyo','きょ'],
+    ['sha','しゃ'],['shu','しゅ'],['sho','しょ'],
+    ['cha','ちゃ'],['chu','ちゅ'],['cho','ちょ'],
+    ['nya','にゃ'],['nyu','にゅ'],['nyo','にょ'],
+    ['hya','ひゃ'],['hyu','ひゅ'],['hyo','ひょ'],
+    ['mya','みゃ'],['myu','みゅ'],['myo','みょ'],
+    ['rya','りゃ'],['ryu','りゅ'],['ryo','りょ'],
+    ['gya','ぎゃ'],['gyu','ぎゅ'],['gyo','ぎょ'],
+    ['bya','びゃ'],['byu','びゅ'],['byo','びょ'],
+    ['pya','ぴゃ'],['pyu','ぴゅ'],['pyo','ぴょ'],
+    ['ja','じゃ'],['ju','じゅ'],['jo','じょ'],['ji','じ'],
+    ['ka','か'],['ki','き'],['ku','く'],['ke','け'],['ko','こ'],
+    ['sa','さ'],['si','し'],['su','す'],['se','せ'],['so','そ'],
+    ['ta','た'],['ti','ち'],['te','て'],['to','と'],
+    ['na','な'],['ni','に'],['nu','ぬ'],['ne','ね'],['no','の'],
+    ['ha','は'],['hi','ひ'],['fu','ふ'],['hu','ふ'],['he','へ'],['ho','ほ'],
+    ['ma','ま'],['mi','み'],['mu','む'],['me','め'],['mo','も'],
+    ['ya','や'],['yu','ゆ'],['yo','よ'],
+    ['ra','ら'],['ri','り'],['ru','る'],['re','れ'],['ro','ろ'],
+    ['wa','わ'],['wo','を'],
+    ['ga','が'],['gi','ぎ'],['gu','ぐ'],['ge','げ'],['go','ご'],
+    ['za','ざ'],['zi','じ'],['zu','ず'],['ze','ぜ'],['zo','ぞ'],
+    ['da','だ'],['di','ぢ'],['du','づ'],['de','で'],['do','ど'],
+    ['ba','ば'],['bi','び'],['bu','ぶ'],['be','べ'],['bo','ぼ'],
+    ['pa','ぱ'],['pi','ぴ'],['pu','ぷ'],['pe','ぺ'],['po','ぽ'],
+    ['a','あ'],['i','い'],['u','う'],['e','え'],['o','お'],
+    ['n','ん'],
+  ];
+  let result = '';
+  let s = romaji.toLowerCase();
+  outer: while (s.length > 0) {
+    if (s.startsWith('nn')) {
+      result += 'ん';
+      s = (s.length === 2 || !'aiueo'.includes(s[2])) ? s.slice(2) : s.slice(1);
+      continue;
+    }
+    if (s[0] === 'n' && s.length >= 2 && !'aiueony'.includes(s[1])) {
+      result += 'ん'; s = s.slice(1); continue;
+    }
+    if (s === 'n') { result += 'ん'; break; }
+    for (const [rom, kana] of map) {
+      if (rom === 'n') continue;
+      if (s.startsWith(rom)) { result += kana; s = s.slice(rom.length); continue outer; }
+    }
+    result += s[0]; s = s.slice(1);
+  }
+  return result;
+}
+
+function normalizeAnswer(s) { return s.toLowerCase().trim().replace(/\s+/g, ''); }
+
+function normalizeGeminate(romaji) {
+  const collapsed = romaji.replace(/([bcdfghjklmnpqrstvwxyz])\1+$/i, '$1');
+  if (collapsed === romaji) return romaji;
+  return collapsed.replace(/[bcdfghjklmnpqrstvwxyz]$/i, '');
+}
+
+function checkRomajiAnswer(userInput, correctRomaji) {
+  const user    = normalizeAnswer(userInput);
+  const correct = normalizeAnswer(correctRomaji);
+  if (user === correct) return true;
+  const userKana    = toHiragana(user);
+  const correctKana = toHiragana(correct);
+  if (userKana === correctKana) return true;
+  if (correctKana.endsWith('っ')) {
+    const userNorm = normalizeGeminate(user);
+    if (userNorm !== user) {
+      if (userNorm === correct) return true;
+      if (toHiragana(userNorm) === correctKana) return true;
+    }
+  }
+  return false;
+}
+
+// Also accept the kana reading directly (user types かえる instead of kaeru)
+function checkAnswer(userInput, wd) {
+  const u = normalizeAnswer(userInput);
+  // romaji match
+  if (checkRomajiAnswer(u, wd.romaji)) return true;
+  // kana match (user typed hiragana directly)
+  if (u === wd.kana) return true;
+  return false;
+}
+
+// Live preview: romaji → hiragana as user types
+function romajiForPreview(val) {
+  return val.replace(/([bcdfghjklmnpqrstvwxyz])\1+$/i, 'っ$1')
+            .replace(/っ[bcdfghjklmnpqrstvwxyz]$/i, 'っ');
+}
+
+// ===================================================
+// MEANING QUIZ — multiple choice
+// ===================================================
+function getMeaningChoices(idx) {
+  const correct = WORD_DATA[idx].meanings[0];
+  // Build a deduplicated pool of distractors
+  const seen = new Set([correct]);
+  const pool = [];
+  for (const w of WORD_DATA) {
+    const m = w.meanings[0];
+    if (!seen.has(m)) { seen.add(m); pool.push(m); }
+  }
+  // Shuffle pool
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const choices = [correct, ...pool.slice(0, 3)];
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+  return { choices, correct };
+}
+
+// ===================================================
+// SESSION OBJECT
+// ===================================================
+let session = {
+  mode: null,         // 'lesson' | 'review'
+  queue: [],
+  currentIdx: 0,
+  correct: 0,
+  wrong: 0,
+  secondChance: 0,
+  item: null,
+  answered: false,
+  wasCorrect: false,
+  userAnswer: '',
+  firstAttemptWrong: false,
+  usedSecondChance: false,
+  groupResults: {},
+  meaningCorrect: null,
+};
+
+let lessonQueue = [];
+let lessonPos   = 0;
+
+// ===================================================
+// UI HELPERS
+// ===================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function getStageColor(stage) {
+  return stage === 'meaning' ? 'var(--stage-meaning)' : 'var(--stage-reading)';
+}
+
+function getStageLabel(stage) {
+  return stage === 'meaning' ? 'Meaning' : 'Reading';
+}
+
+function updateHomeStats() {
+  if (WORD_DATA.length === 0) return; // data not loaded yet
+
+  const lessons = getLessonQueue().length;
+  const reviews = getReviewCount();
+  let mastered = 0;
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    if (isWordMastered(i)) mastered++;
+  }
+
+  document.getElementById('stat-lessons').textContent  = lessons;
+  document.getElementById('stat-reviews').textContent  = reviews;
+  document.getElementById('stat-mastered').textContent = mastered;
+  document.getElementById('home-lesson-count').textContent = lessons;
+  document.getElementById('home-review-count').textContent = reviews;
+
+  const banner      = document.getElementById('pretest-banner');
+  const bannerTitle = document.getElementById('pretest-banner-title');
+  if (banner) {
+    banner.style.display = (!state.pretestDismissed || pretestInProgress) ? 'block' : 'none';
+    if (bannerTitle) {
+      bannerTitle.textContent = pretestInProgress
+        ? 'Pretest in progress — Resume where you left off'
+        : 'Pretest — Already know some words?';
+    }
+  }
+
+  const h = new Date().getHours();
+  document.getElementById('time-greeting').textContent =
+    h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+
+  // SRS level bar
+  const levels = Array(MAX_SRS_LEVEL + 1).fill(0);
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    const c = state.cards[cardKey(i)];
+    if (!c || !c.meaning.learning) continue;
+    levels[Math.min(wordDisplayLevel(i), MAX_SRS_LEVEL)]++;
+  }
+  const total = levels.reduce((a, b) => a + b, 0) || 1;
+  const colors = ['#a8d8a8','#8ecf90','#72c47a','#56b870','#3aaa82',
+                  '#2e8a99','#2e6bb0','#3050c0','#5038b8','#6a28a8','#7a1898'];
+  document.getElementById('srs-levels-display').innerHTML =
+    levels.map((count, i) => `
+      <div class="srs-level">
+        <div class="srs-level-bar">
+          <div class="srs-level-fill"
+               style="width:${(count/total)*100}%;background:${colors[i]}"></div>
+        </div>
+        <div class="srs-level-label">${i}<br><span style="font-size:10px">${count}</span></div>
+      </div>`).join('');
+}
+
+// ===================================================
+// RESET
+// ===================================================
+function confirmReset() {
+  if (!confirm('Reset ALL progress? This cannot be undone.')) return;
+  localStorage.removeItem('sumi_words_state');
+  localStorage.removeItem('sumi_words_pretest');
+  state = { cards: {}, unlockedSet: new Set(), pretestFailed: [], pretestDismissed: false, wordHistory: {} };
+  pretestInProgress = false;
+  pretest.queue = []; pretest.pos = 0; pretest.fastTracked = 0;
+  if (WORD_DATA.length > 0) {
+    const n = Math.min(5, WORD_DATA.length);
+    for (let i = 0; i < n; i++) {
+      const k = cardKey(i);
+      state.unlockedSet.add(k);
+      state.cards[k] = { meaning: createCardState(), reading: createCardState() };
+    }
+  }
+  saveState();
+  tryUnlockNext();
+  updateHomeStats();
+  showScreen('home');
+}
+
+// ===================================================
+// NAVIGATION
+// ===================================================
+function goHome() {
+  tryUnlockNext();
+  saveState();
+  updateHomeStats();
+  showScreen('home');
+}
+
+// ===================================================
+// PRETEST STATE
+// ===================================================
+let pretestInProgress = false;
+let pretest = {
+  queue: [],
+  pos: 0,
+  stage: 'meaning',   // cycles: meaning → reading
+  results: {},        // idx → { meaning: bool, reading: bool }
+  meaningCorrect: null,
+  answered: false,
+  fastTracked: 0,
+};
+
+// ===================================================
+// LESSON FLOW
+// ===================================================
+function startLessons() {
+  lessonQueue = getLessonQueue();
+  if (lessonQueue.length === 0) {
+    alert('No new lessons right now! Come back after reviewing.');
+    return;
+  }
+  state.pretestDismissed = true;
+  pretestInProgress = false;
+  saveState();
+  lessonPos = 0;
+  showScreen('lesson');
+  renderLesson();
+}
+
+function renderLesson() {
+  const item  = lessonQueue[lessonPos];
+  const wd    = WORD_DATA[item.idx];
+  const card  = document.getElementById('lesson-card');
+  const color = getStageColor(item.stage);
+  const label = getStageLabel(item.stage);
+
+  let content = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
+  content += `<div class="word-display">${wd.word}</div>`;
+  content += `<div class="word-kana">${wd.kana}</div>`;
+
+  if (item.stage === 'meaning') {
+    content += `<div class="word-romaji">${wd.romaji}</div>`;
+    content += `<div class="lesson-meaning">${wd.meanings[0]}</div>`;
+    if (wd.meanings.length > 1) {
+      content += `<div class="lesson-meaning-sub">${wd.meanings.slice(1).join(' · ')}</div>`;
+    }
+  } else {
+    // Reading stage — show kana prominently with romaji
+    content += `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0 16px;">
+        <div style="font-size:36px;font-family:'Noto Sans JP',sans-serif;color:var(--blue-light);
+                    letter-spacing:0.06em;">${wd.kana}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--ink-light);">
+          ${wd.romaji}
+        </div>
+      </div>
+      <div class="lesson-meaning" style="font-size:20px;">${wd.meanings[0]}</div>
+    `;
+  }
+
+  card.innerHTML = content;
+  card.style.setProperty('--stage-color', color);
+  card.classList.add('animate-in');
+  setTimeout(() => card.classList.remove('animate-in'), 400);
+
+  const prevBtn = document.getElementById('lesson-prev-btn');
+  const nextBtn = document.getElementById('lesson-next-btn');
+  prevBtn.style.display  = lessonPos === 0 ? 'none' : '';
+  nextBtn.textContent    = lessonPos === lessonQueue.length - 1 ? 'Done →' : 'Next →';
+
+  markCurrentLessonSeen();
+}
+
+function markCurrentLessonSeen() {
+  const item = lessonQueue[lessonPos];
+  if (item && state.cards[cardKey(item.idx)]) {
+    state.cards[cardKey(item.idx)][item.stage].learning  = true;
+    state.cards[cardKey(item.idx)][item.stage].nextReview = Date.now();
+    saveState();
+  }
+}
+
+function prevLesson() {
+  if (lessonPos > 0) { lessonPos--; renderLesson(); }
+}
+
+function nextLesson() {
+  if (lessonPos < lessonQueue.length - 1) {
+    lessonPos++;
+    renderLesson();
+  } else {
+    goHome();
+  }
+}
+
+// ===================================================
+// REVIEW FLOW
+// ===================================================
+function startReviews() {
+  const queue = getReviewQueue();
+  if (queue.length === 0) {
+    alert('No reviews due right now! Check back later.');
+    return;
+  }
+  session.mode         = 'review';
+  session.queue        = queue;
+  session.currentIdx   = 0;
+  session.correct      = 0;
+  session.wrong        = 0;
+  session.secondChance = 0;
+  session.groupResults = {};
+  startQuiz();
+}
+
+// ===================================================
+// QUIZ
+// ===================================================
+function startQuiz() {
+  showScreen('quiz');
+  renderQuizCard();
+}
+
+function renderQuizCard() {
+  if (session.currentIdx >= session.queue.length) {
+    showComplete();
+    return;
+  }
+
+  const item  = session.queue[session.currentIdx];
+  const wd    = WORD_DATA[item.idx];
+  const color = getStageColor(item.stage);
+  const label = getStageLabel(item.stage);
+
+  session.answered         = false;
+  session.item             = item;
+  session.userAnswer       = '';
+  session.firstAttemptWrong = false;
+  session.usedSecondChance = false;
+
+  // Progress bar (unique words)
+  const uniqueTotal = new Set(session.queue.map(it => it.idx)).size;
+  const uniqueDone  = new Set(session.queue.slice(0, session.currentIdx).map(it => it.idx)).size;
+  const pct = (uniqueDone / uniqueTotal) * 100;
+  const fillEl = document.getElementById('quiz-progress-fill');
+  fillEl.style.width      = pct + '%';
+  fillEl.style.background = color;
+  document.getElementById('quiz-count').textContent = `${uniqueDone}/${uniqueTotal}`;
+
+  const card = document.getElementById('quiz-card');
+  card.className = `quiz-card animate-in stage-${item.stage}`;
+  card.style.setProperty('--stage-color', color);
+
+  let html = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
+
+  if (item.stage === 'meaning') {
+    // Show word + kana, ask for meaning (multiple choice)
+    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-word-kana">${wd.kana}</div>`;
+    html += `<div class="quiz-prompt">What does this word mean?</div>`;
+    const { choices, correct } = getMeaningChoices(item.idx);
+    session.meaningCorrect = correct;
+    html += `<div class="choices" id="meaning-choices">`;
+    choices.forEach(c => {
+      html += `<button class="choice-btn" data-meaning="${c.replace(/"/g,'&quot;')}">${c}</button>`;
+    });
+    html += `</div>`;
+  } else {
+    // Show word only, ask for reading (romaji / kana input)
+    // Kana is hidden — it's what they're being tested on
+    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-word-kana hidden" id="quiz-kana-reveal">${wd.kana}</div>`;
+    html += `<div class="quiz-prompt">How do you read this word?</div>`;
+    html += `
+      <div class="input-area">
+        <div class="kana-preview placeholder" id="kana-preview">type romaji below...</div>
+        <input type="text" class="romaji-input" id="romaji-input"
+          placeholder="romaji..."
+          oninput="onRomajiInput(this)"
+          onkeydown="onRomajiKeydown(event)"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button class="submit-btn" onclick="submitReading()" id="submit-btn" style="width:100%;">Check</button>
+        <button onclick="dontKnow()" id="dont-know-btn"
+                style="background:none;border:none;color:var(--ink-light);font-size:11px;
+                       cursor:pointer;padding:4px 0;letter-spacing:0.05em;opacity:0.6;">
+          I don't know
+        </button>
+      </div>`;
+  }
+
+  card.innerHTML = html;
+
+  // Attach meaning click via delegation
+  if (item.stage === 'meaning') {
+    document.getElementById('meaning-choices').addEventListener('click', e => {
+      const btn = e.target.closest('.choice-btn');
+      if (btn) selectMeaning(btn, btn.dataset.meaning, session.meaningCorrect);
+    });
+  } else {
+    setTimeout(() => {
+      const inp = document.getElementById('romaji-input');
+      if (inp) inp.focus({ preventScroll: true });
+    }, 150);
+  }
+}
+
+// ── Live romaji → kana preview ───────────────────
+function onRomajiInput(input) {
+  const val     = input.value;
+  const preview = document.getElementById('kana-preview');
+  if (!val) {
+    preview.textContent = 'type romaji below...';
+    preview.className   = 'kana-preview placeholder';
+  } else {
+    preview.textContent = toHiragana(romajiForPreview(val));
+    preview.className   = 'kana-preview';
+  }
+}
+
+function onRomajiKeydown(e) {
+  if (e.key === 'Enter') {
+    if (!session.answered) submitReading();
+    else nextQuizItem();
+  }
+}
+
+// ── Meaning (multiple choice) ─────────────────────
+function selectMeaning(btn, selected, correct) {
+  if (session.answered) return;
+  session.answered  = true;
+  session.wasCorrect = selected === correct;
+  session.userAnswer = selected;
+
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.meaning === correct) b.classList.add('correct');
+    else if (b === btn && !session.wasCorrect) b.classList.add('wrong');
+  });
+
+  gradeCurrentCard(session.wasCorrect);
+
+  const card = document.getElementById('quiz-card');
+  card.classList.remove('flash-correct', 'flash-wrong');
+  void card.offsetWidth;
+  card.classList.add(session.wasCorrect ? 'flash-correct' : 'flash-wrong');
+
+  setTimeout(() => {
+    if (shouldShowReview()) showReviewScreen();
+    else nextQuizItem();
+  }, 700);
+}
+
+// ── Reading (text input) ──────────────────────────
+function dontKnow() {
+  if (session.answered) return;
+  session.firstAttemptWrong = true;
+  session.answered   = true;
+  session.wasCorrect = false;
+  session.userAnswer = '';
+
+  const input = document.getElementById('romaji-input');
+  if (input) { input.disabled = true; input.classList.add('wrong'); }
+  const submitBtn = document.getElementById('submit-btn');
+  if (submitBtn) { submitBtn.textContent = 'Next →'; submitBtn.onclick = nextQuizItem; }
+  const dkBtn = document.getElementById('dont-know-btn');
+  if (dkBtn) dkBtn.disabled = true;
+  const hint = document.getElementById('retry-hint');
+  if (hint) hint.remove();
+
+  gradeCurrentCard(false);
+
+  const card = document.getElementById('quiz-card');
+  card.classList.remove('flash-correct', 'flash-wrong');
+  void card.offsetWidth;
+  card.classList.add('flash-wrong');
+
+  // Reveal kana
+  const reveal = document.getElementById('quiz-kana-reveal');
+  if (reveal) reveal.classList.remove('hidden');
+
+  setTimeout(() => showReviewScreen(), 700);
+}
+
+function submitReading() {
+  if (session.answered) return;
+  const input = document.getElementById('romaji-input');
+  if (!input || !input.value.trim()) return;
+
+  const userVal  = input.value.trim();
+  const wd       = WORD_DATA[session.item.idx];
+  const wasCorrect = checkAnswer(userVal, wd);
+
+  if (!wasCorrect && !session.firstAttemptWrong) {
+    // First wrong: shake, let them try once more
+    session.firstAttemptWrong = true;
+    input.classList.add('wrong', 'shake');
+    let hint = document.getElementById('retry-hint');
+    if (!hint) {
+      hint = document.createElement('div');
+      hint.id = 'retry-hint';
+      hint.style.cssText = 'font-size:12px;color:var(--red);margin-top:6px;text-align:center;';
+      input.parentNode.insertBefore(hint, input.nextSibling);
+    }
+    hint.textContent = 'Not quite — try once more';
+    setTimeout(() => {
+      input.classList.remove('wrong', 'shake');
+      input.value = '';
+      const preview = document.getElementById('kana-preview');
+      if (preview) { preview.textContent = 'type romaji below...'; preview.className = 'kana-preview placeholder'; }
+      input.focus({ preventScroll: true });
+    }, 600);
+    return;
+  }
+
+  // Final submission
+  session.answered         = true;
+  session.wasCorrect       = wasCorrect;
+  session.userAnswer       = userVal;
+  session.usedSecondChance = session.firstAttemptWrong && wasCorrect;
+
+  input.classList.add(wasCorrect ? 'correct' : 'wrong');
+  input.disabled = true;
+  if (!wasCorrect) input.classList.add('shake');
+
+  const submitBtn = document.getElementById('submit-btn');
+  if (submitBtn) { submitBtn.textContent = 'Next →'; submitBtn.onclick = nextQuizItem; }
+  const dkBtn = document.getElementById('dont-know-btn');
+  if (dkBtn) dkBtn.disabled = true;
+  const hint = document.getElementById('retry-hint');
+  if (hint) hint.remove();
+
+  // Reveal kana regardless of result
+  const reveal = document.getElementById('quiz-kana-reveal');
+  if (reveal) reveal.classList.remove('hidden');
+
+  gradeCurrentCard(wasCorrect);
+
+  const card = document.getElementById('quiz-card');
+  card.classList.remove('flash-correct', 'flash-wrong');
+  void card.offsetWidth;
+  card.classList.add(wasCorrect ? 'flash-correct' : 'flash-wrong');
+
+  setTimeout(() => {
+    if (shouldShowReview()) showReviewScreen();
+    else nextQuizItem();
+  }, 700);
+}
+
+function nextQuizItem() {
+  session.currentIdx++;
+  // Skip remaining stages for a demoted grouped word
+  while (session.currentIdx < session.queue.length) {
+    const next = session.queue[session.currentIdx];
+    const gr   = session.groupResults && session.groupResults[next.idx];
+    if (gr && gr.demoted && !(next.stage in gr.stages)) {
+      session.currentIdx++;
+    } else break;
+  }
+  showScreen('quiz');
+  renderQuizCard();
+}
+
+// ===================================================
+// REVIEW / RESULT SCREEN
+// ===================================================
+function showReviewScreen() {
+  const item       = session.item;
+  const idx        = item.idx;
+  const wd         = WORD_DATA[idx];
+  const gr         = session.groupResults && session.groupResults[idx];
+  const isGrouped  = allStagesLearning(idx);
+  const overallOK  = isGrouped && gr ? !gr.demoted : session.wasCorrect;
+
+  const displayLevel = wordDisplayLevel(idx);
+  const displayCard  = state.cards[cardKey(idx)].meaning;
+  const levelLabel   = displayLevel >= MAX_SRS_LEVEL ? '⭐ Mastered' : `Level ${displayLevel} / ${MAX_SRS_LEVEL}`;
+  const nextLabel    = formatNextReview(displayCard.nextReview);
+
+  let html = `
+    <div class="review-result-banner ${overallOK ? 'correct-banner' : 'wrong-banner'}"></div>
+    <div class="review-result-label  ${overallOK ? 'correct-label'  : 'wrong-label'}">
+      ${overallOK ? '✓ Correct' : '✗ Incorrect'}
+    </div>
+    <div class="review-word-big">${wd.word}</div>
+    <div class="review-word-kana">${wd.kana}
+      <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--ink-light);margin-left:8px;">
+        ${wd.romaji}
+      </span>
+    </div>
+    <div class="review-meaning">${wd.meanings.join(' · ')}</div>
+    <div style="display:flex;gap:16px;justify-content:center;margin:12px 0;flex-wrap:wrap;">
+      <div style="font-size:12px;color:var(--ink-light);background:var(--paper);
+                  padding:6px 14px;border-radius:20px;border:1px solid var(--paper-darker);">
+        ${levelLabel}
+      </div>
+      <div style="font-size:12px;color:var(--ink-light);background:var(--paper);
+                  padding:6px 14px;border-radius:20px;border:1px solid var(--paper-darker);">
+        Next review: <strong style="color:var(--gold)">${nextLabel}</strong>
+      </div>
+    </div>`;
+
+  if (isGrouped && gr && Object.keys(gr.stages).length > 0) {
+    // Show per-stage breakdown
+    html += '<hr class="review-divider">';
+    for (const stage of ['meaning', 'reading'].filter(s => s in gr.stages)) {
+      const ok   = gr.stages[stage];
+      const col  = ok ? 'var(--green-light)' : 'var(--red-light)';
+      const icon = ok ? '✓' : '✗';
+      html += `<div class="review-stage-row">
+        <span style="color:${col};font-weight:600;margin-right:8px;">${icon}</span>
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;
+                     color:var(--ink-light);margin-right:8px;">${getStageLabel(stage)}</span>`;
+      if (stage === 'meaning') {
+        html += `<span style="font-size:14px;color:var(--ink)">${wd.meanings[0]}</span>`;
+      } else {
+        html += `<span style="font-size:14px;color:var(--ink)">${wd.kana}
+                   <span style="font-family:'DM Mono',monospace;font-size:12px;
+                                color:var(--ink-light);margin-left:6px;">(${wd.romaji})</span>
+                 </span>`;
+        if (!ok) {
+          const ans = session.userAnswer || '(skipped)';
+          html += `<div style="margin:4px 0 0 24px;font-size:12px;">
+                     <span class="wrong-answer">${ans}</span>
+                     → <span class="correct-answer">${wd.romaji}</span>
+                   </div>`;
+        }
+      }
+      html += `</div>`;
+    }
+  } else {
+    // Solo card — show the one stage detail
+    if (item.stage === 'reading' && !session.wasCorrect) {
+      html += `<hr class="review-divider">
+        <div class="your-answer-line">Your answer: <span class="wrong-answer">${session.userAnswer || '(none)'}</span></div>
+        <div class="your-answer-line">Correct: <span class="correct-answer">${wd.romaji}</span>
+          <span style="font-family:'Noto Sans JP',sans-serif;font-size:13px;
+                       color:var(--ink-light);margin-left:8px;">${wd.kana}</span>
+        </div>`;
+    }
+  }
+
+  html += '<button class="next-btn" onclick="nextQuizItem()">Continue →</button>';
+  document.getElementById('review-content').innerHTML = html;
+  showScreen('review');
+}
+
+function showComplete() {
+  document.getElementById('complete-correct').textContent     = session.correct;
+  document.getElementById('complete-secondchance').textContent = session.secondChance || 0;
+  document.getElementById('complete-wrong').textContent       = session.wrong;
+  const total = session.correct + session.wrong;
+  const pct   = total > 0 ? Math.round((session.correct / total) * 100) : 0;
+  document.getElementById('complete-subtitle').textContent =
+    pct >= 80 ? 'Excellent work! Your consistency is building mastery.' :
+    pct >= 60 ? 'Good effort! Review the ones you missed.' :
+                'Keep practicing — repetition is the key.';
+  document.getElementById('complete-title').textContent =
+    session.mode === 'lesson' ? 'Lessons Complete!' : 'Reviews Complete!';
+  showScreen('complete');
+}
+
+// ===================================================
+// BROWSE
+// ===================================================
+// Groups defined by word index ranges — filled after WORD_DATA is loaded
+function buildBrowseGroups() {
+  const groups = {};
+
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    const g = WORD_DATA[i].group || 'Other';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(i);
+  }
+
+  return Object.entries(groups).map(([name, indices]) => ({ name, indices }));
+}
+
+function makeBrowseCard(i) {
+  const wd       = WORD_DATA[i];
+  const c        = state.cards[cardKey(i)];
+  const unlocked = state.unlockedSet.has(cardKey(i));
+  const taught   = unlocked && c && c.meaning.learning;
+
+  let levelDisplay = '';
+  if (!taught) {
+    levelDisplay = `<div class="browse-level-locked">—</div>`;
+  } else {
+    const lvl = wordDisplayLevel(i);
+    levelDisplay = lvl >= MAX_SRS_LEVEL
+      ? `<div class="browse-level" style="color:var(--gold)">⭐</div>`
+      : `<div class="browse-level" style="color:${srsLevelColor(lvl)}">Lv ${lvl}</div>`;
+  }
+
+  return `<div class="browse-word-card" style="${!taught ? 'opacity:0.35' : ''}" data-idx="${i}">
+    <span class="browse-word-char" style="${!taught ? 'filter:blur(2px)' : ''}">${wd.word}</span>
+    <div class="browse-word-meaning">${wd.meanings[0]}</div>
+    ${levelDisplay}
+  </div>`;
+}
+
+function showBrowse() {
+  const grid   = document.getElementById('browse-grid');
+  const groups = buildBrowseGroups();
+
+  const totalWords   = WORD_DATA.length;
+  const learnedWords = Object.values(state.cards)
+    .filter(c => c && c.meaning && c.meaning.learning).length;
+  const pct = totalWords > 0 ? (learnedWords / totalWords) * 100 : 0;
+  document.getElementById('browse-progress-fill').style.width = pct + '%';
+  document.getElementById('browse-progress-label').textContent =
+    `${learnedWords} / ${totalWords} words unlocked`;
+
+  grid.innerHTML = groups.map((g, gi) => {
+    const unlocked = g.indices.filter(i => {
+      const c = state.cards[cardKey(i)];
+      return c && c.meaning.learning;
+    }).length;
+    return `
+      <div class="browse-group">
+        <div class="browse-group-header" onclick="toggleBrowseGroup(${gi})">
+          <span class="browse-group-title">${g.name}</span>
+          <span class="browse-group-meta">
+            <span>${unlocked}/${g.indices.length}</span>
+            <span class="browse-group-chevron" id="browse-chevron-${gi}">▼</span>
+          </span>
+        </div>
+        <div class="browse-group-grid" id="browse-group-grid-${gi}">
+          ${g.indices.map(i => makeBrowseCard(i)).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  grid.onclick = e => {
+    const card = e.target.closest('.browse-word-card');
+    if (card) openWordModal(parseInt(card.dataset.idx));
+  };
+
+  showScreen('browse');
+}
+
+function toggleBrowseGroup(gi) {
+  const gridEl  = document.getElementById(`browse-group-grid-${gi}`);
+  const chevron = document.getElementById(`browse-chevron-${gi}`);
+  if (!gridEl) return;
+  const isOpen = gridEl.classList.contains('open');
+  gridEl.classList.toggle('open', !isOpen);
+  if (chevron) chevron.classList.toggle('open', !isOpen);
+}
+
+// ── Word detail modal ─────────────────────────────
+function openWordModal(idx) {
+  const wd       = WORD_DATA[idx];
+  const c        = state.cards[cardKey(idx)];
+  const taught   = c && c.meaning.learning;
+
+  let levelHtml = '';
+  if (!taught) {
+    levelHtml = `<div class="kanji-modal-level">Not yet unlocked</div>`;
+  } else {
+    const lvl = wordDisplayLevel(idx);
+    levelHtml = `<div class="kanji-modal-level" style="color:${srsLevelColor(lvl)}">
+      ${lvl >= MAX_SRS_LEVEL ? '⭐ Mastered' : 'Level ' + lvl}
+    </div>`;
+  }
+
+  // Stage pill for meaning
+  const mLvl = c && c.meaning.learning ? c.meaning.level : null;
+  const rLvl = c && c.reading.learning ? c.reading.level : null;
+
+  const stagePills = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <span style="padding:4px 12px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace;
+                   background:color-mix(in srgb,var(--stage-meaning) 15%,transparent);
+                   color:var(--stage-meaning);
+                   border:1px solid color-mix(in srgb,var(--stage-meaning) 30%,transparent);">
+        Meaning ${mLvl !== null ? 'Lv ' + mLvl : '—'}
+      </span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace;
+                   background:color-mix(in srgb,var(--stage-reading) 15%,transparent);
+                   color:var(--stage-reading);
+                   border:1px solid color-mix(in srgb,var(--stage-reading) 30%,transparent);">
+        Reading ${rLvl !== null ? 'Lv ' + rLvl : '—'}
+      </span>
+    </div>`;
+
+  document.getElementById('kanji-modal').innerHTML = `
+    <div class="kanji-modal-header">
+      <div>
+        <div class="kanji-modal-word">${wd.word}</div>
+        <div class="kanji-modal-kana">${wd.kana}</div>
+      </div>
+      <button class="kanji-modal-close" onclick="closeWordModal()">✕</button>
+    </div>
+    <div class="kanji-modal-meanings">${wd.meanings.join(' · ')}</div>
+    <div class="kanji-modal-romaji">${wd.romaji}</div>
+    ${levelHtml}
+    ${stagePills}
+    ${c && c.reading.learning
+      ? `<div class="kanji-modal-section-title">Next Review</div>
+         <div style="font-size:13px;color:var(--ink-light);">
+           ${formatNextReview(Math.min(c.meaning.nextReview, c.reading.nextReview))}
+         </div>`
+      : ''}
+  `;
+  document.getElementById('kanji-modal-overlay').classList.add('open');
+}
+
+function closeWordModal(event) {
+  if (event && event.target !== document.getElementById('kanji-modal-overlay')) return;
+  document.getElementById('kanji-modal-overlay').classList.remove('open');
+}
+
+// ── SRS progress screen ───────────────────────────
+function showSrsProgress() {
+  const grid        = document.getElementById('srs-progress-grid');
+  const kanjiByLevel = {};
+
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (!state.unlockedSet.has(cardKey(i))) continue;
+    const c = state.cards[cardKey(i)];
+    if (!c || !c.meaning.learning) continue;
+    const lvl = wordDisplayLevel(i);
+    if (!kanjiByLevel[lvl]) kanjiByLevel[lvl] = [];
+    kanjiByLevel[lvl].push(i);
+  }
+
+  const levels = Object.keys(kanjiByLevel).map(Number).sort((a, b) => b - a);
+  if (levels.length === 0) {
+    grid.innerHTML = '<p style="color:var(--ink-light);text-align:center;margin-top:32px;">No words learned yet.</p>';
+    showScreen('srs-progress');
+    return;
+  }
+
+  grid.innerHTML = levels.map((lvl, gi) => {
+    const indices = kanjiByLevel[lvl];
+    const label   = lvl >= MAX_SRS_LEVEL ? '⭐ Mastered' : `Level ${lvl}`;
+    const color   = srsLevelColor(lvl);
+    return `
+      <div class="browse-group">
+        <div class="browse-group-header" onclick="toggleBrowseGroup('srs-${gi}')">
+          <span class="browse-group-title" style="color:${color}">${label}</span>
+          <span class="browse-group-meta">
+            <span>${indices.length} words</span>
+            <span class="browse-group-chevron" id="browse-chevron-srs-${gi}">▼</span>
+          </span>
+        </div>
+        <div class="browse-group-grid" id="browse-group-grid-srs-${gi}">
+          ${indices.map(i => makeBrowseCard(i)).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  grid.onclick = e => {
+    const card = e.target.closest('.browse-word-card');
+    if (card) openWordModal(parseInt(card.dataset.idx));
+  };
+
+  showScreen('srs-progress');
+}
+
+// ===================================================
+// PRETEST
+// ===================================================
+function startPretest() {
+  if (!state.pretestFailed) state.pretestFailed = [];
+  pretest.queue = [];
+
+  for (let i = 0; i < WORD_DATA.length; i++) {
+    if (state.pretestFailed.includes(cardKey(i))) continue;
+    const c = state.cards[cardKey(i)];
+    if (!c) { pretest.queue.push(i); continue; }
+    const meaningBelow = c.meaning.level < PRETEST_LEVEL;
+    const readingBelow = c.reading.level < PRETEST_LEVEL;
+    if (meaningBelow || readingBelow) pretest.queue.push(i);
+  }
+
+  if (pretest.queue.length === 0) {
+    alert('All words are already at Level 6 or above. Nothing to pretest!');
+    return;
+  }
+
+  pretest.pos         = 0;
+  pretest.stage       = 'meaning';
+  pretest.results     = {};
+  pretest.fastTracked = 0;
+  pretestInProgress   = true;
+  showScreen('pretest');
+  renderPretestCard();
+}
+
+function renderPretestCard() {
+  const idx   = pretest.queue[pretest.pos];
+  const wd    = WORD_DATA[idx];
+  const total = pretest.queue.length * 2; // meaning + reading per word
+  const done  = pretest.pos * 2 + (pretest.stage === 'reading' ? 1 : 0);
+  pretest.answered = false;
+
+  document.getElementById('pretest-progress-fill').style.width =
+    (done / total * 100) + '%';
+  document.getElementById('pretest-count').textContent =
+    `${pretest.pos + 1}/${pretest.queue.length}`;
+
+  const card  = document.getElementById('pretest-card');
+  const color = getStageColor(pretest.stage);
+  const label = getStageLabel(pretest.stage);
+  card.style.setProperty('--stage-color', color);
+
+  let html = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
+
+  if (pretest.stage === 'meaning') {
+    const { choices, correct } = getMeaningChoices(idx);
+    pretest.meaningCorrect = correct;
+    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-word-kana">${wd.kana}</div>`;
+    html += `<div class="quiz-prompt">What does this word mean?</div>`;
+    html += `<div class="choices" id="pretest-choices">`;
+    choices.forEach(c => {
+      html += `<button class="choice-btn" data-meaning="${c.replace(/"/g,'&quot;')}">${c}</button>`;
+    });
+    html += `</div>`;
+  } else {
+    // Reading
+    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-prompt">How do you read this word? (romaji)</div>`;
+    html += `
+      <div class="input-area">
+        <div class="kana-preview placeholder" id="pretest-kana-preview">type romaji below...</div>
+        <input type="text" class="romaji-input" id="pretest-romaji-input"
+          placeholder="romaji..."
+          oninput="onPretestRomajiInput(this)"
+          onkeydown="if(event.key==='Enter'&&!pretest.answered) submitPretestReading()"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button class="submit-btn" style="background:var(--red)" onclick="submitPretestReading()">Check</button>
+      </div>`;
+  }
+
+  card.innerHTML = html;
+  card.className = 'quiz-card animate-in';
+
+  if (pretest.stage === 'meaning') {
+    document.getElementById('pretest-choices').addEventListener('click', e => {
+      const btn = e.target.closest('.choice-btn');
+      if (btn) pretestSelectMeaning(btn, btn.dataset.meaning, pretest.meaningCorrect);
+    });
+  } else {
+    setTimeout(() => {
+      const inp = document.getElementById('pretest-romaji-input');
+      if (inp) inp.focus({ preventScroll: true });
+    }, 150);
+  }
+}
+
+function onPretestRomajiInput(input) {
+  const preview = document.getElementById('pretest-kana-preview');
+  if (!input.value) {
+    preview.textContent = 'type romaji below...';
+    preview.className   = 'kana-preview placeholder';
+  } else {
+    preview.textContent = toHiragana(romajiForPreview(input.value));
+    preview.className   = 'kana-preview';
+  }
+}
+
+function pretestSelectMeaning(btn, selected, correct) {
+  if (pretest.answered) return;
+  pretest.answered   = true;
+  const wasCorrect   = selected === correct;
+
+  document.querySelectorAll('#pretest-card .choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.meaning === correct) b.classList.add('correct');
+    else if (b === btn && !wasCorrect) b.classList.add('wrong');
+  });
+
+  const card = document.getElementById('pretest-card');
+  card.classList.remove('flash-correct', 'flash-wrong');
+  void card.offsetWidth;
+  card.classList.add(wasCorrect ? 'flash-correct' : 'flash-wrong');
+
+  const idx = pretest.queue[pretest.pos];
+  if (!pretest.results[idx]) pretest.results[idx] = {};
+  pretest.results[idx].meaning = wasCorrect;
+
+  if (!wasCorrect) {
+    pretest.results[idx].reading = false;
+    if (!state.pretestFailed) state.pretestFailed = [];
+    if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
+    saveState();
+    setTimeout(() => advancePretestWord(), 900);
+  } else {
+    setTimeout(() => advancePretestStage(), 900);
+  }
+}
+
+function submitPretestReading() {
+  if (pretest.answered) return;
+  const input = document.getElementById('pretest-romaji-input');
+  if (!input || !input.value.trim()) return;
+  pretest.answered = true;
+
+  const idx        = pretest.queue[pretest.pos];
+  const wd         = WORD_DATA[idx];
+  const wasCorrect = checkAnswer(input.value, wd);
+
+  input.classList.add(wasCorrect ? 'correct' : 'wrong');
+  input.disabled = true;
+
+  const card = document.getElementById('pretest-card');
+  card.classList.remove('flash-correct', 'flash-wrong');
+  void card.offsetWidth;
+  card.classList.add(wasCorrect ? 'flash-correct' : 'flash-wrong');
+
+  if (!pretest.results[idx]) pretest.results[idx] = {};
+  pretest.results[idx].reading = wasCorrect;
+
+  if (!wasCorrect) {
+    if (!state.pretestFailed) state.pretestFailed = [];
+    if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
+    saveState();
+    setTimeout(() => advancePretestWord(), 900);
+  } else {
+    setTimeout(() => advancePretestStage(), 900);
+  }
+}
+
+function advancePretestStage() {
+  const idx = pretest.queue[pretest.pos];
+  const c   = state.cards[cardKey(idx)];
+
+  if (pretest.stage === 'meaning') {
+    // Move to reading if it's below PRETEST_LEVEL
+    if (!c || c.reading.level < PRETEST_LEVEL) {
+      pretest.stage = 'reading';
+      renderPretestCard();
+      return;
+    }
+  }
+
+  // Both stages done — check if all passed
+  const r             = pretest.results[idx] || {};
+  const meaningPassed = r.meaning === true || (c && c.meaning.level >= PRETEST_LEVEL);
+  const readingPassed = r.reading === true || (c && c.reading.level >= PRETEST_LEVEL);
+
+  if (meaningPassed && readingPassed) {
+    // Fast-track both stages to PRETEST_LEVEL
+    if (!state.cards[cardKey(idx)]) {
+      state.cards[cardKey(idx)] = { meaning: createCardState(), reading: createCardState() };
+      state.unlockedSet.add(cardKey(idx));
+    } else {
+      state.unlockedSet.add(cardKey(idx));
+    }
+    const nextReview = Date.now() + SRS_INTERVALS_MINS[PRETEST_LEVEL] * 60000;
+    state.cards[cardKey(idx)].meaning = { level: PRETEST_LEVEL, nextReview, learning: true };
+    state.cards[cardKey(idx)].reading = { level: PRETEST_LEVEL, nextReview, learning: true };
+    pretest.fastTracked++;
+    tryUnlockNext();
+  }
+
+  advancePretestWord();
+}
+
+function advancePretestWord() {
+  pretest.pos++;
+  if (pretest.pos >= pretest.queue.length) {
+    pretestFinish();
+    return;
+  }
+  pretest.stage = 'meaning';
+  renderPretestCard();
+}
+
+function pretestFinish() {
+  pretestInProgress      = false;
+  state.pretestDismissed = true;
+  tryUnlockNext();
+  saveState();
+  updateHomeStats();
+  alert(`Pretest complete! ${pretest.fastTracked} word${pretest.fastTracked !== 1 ? 's' : ''} fast-tracked to Level 6.`);
+  goHome();
+}
+
+function pretestGoHome() {
+  tryUnlockNext();
+  saveState();
+  updateHomeStats();
+  showScreen('home');
+}
+
+function pretestGiveUp() {
+  if (!confirm('End the pretest? Words you already passed are saved, but the pretest will be locked.')) return;
+  pretestInProgress      = false;
+  state.pretestDismissed = true;
+  tryUnlockNext();
+  saveState();
+  updateHomeStats();
+  showScreen('home');
+}
+
+function skipPretestWord() {
+  const idx = pretest.queue[pretest.pos];
+  if (!pretest.results[idx]) pretest.results[idx] = {};
+  pretest.results[idx].meaning = false;
+  pretest.results[idx].reading = false;
+  if (!state.pretestFailed) state.pretestFailed = [];
+  if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
+  saveState();
+  advancePretestWord();
+}
+
+// ===================================================
+// INIT
+// ===================================================
+initState();
+tryUnlockNext();
+updateHomeStats();
+</script>
+</body>
+</html>
