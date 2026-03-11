@@ -7,21 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #eceef5;
-    --ink-light: #8899b8;
-    --paper: #0e1117;
-    --paper-dark: #161b27;
-    --paper-darker: #1e2535;
+    --ink: #edeef5;
+    --ink-light: #9099b0;
+    --paper: #0f1015;
+    --paper-dark: #17191f;
+    --paper-darker: #22252e;
     --red: #e05565;
     --red-light: #f07878;
-    --gold: #8b9cf0;
-    --gold-light: #b0beff;
+    --gold: #c9a84c;
+    --gold-light: #f0c868;
     --blue: #4a8ec2;
     --blue-light: #6aaee0;
     --green: #4a9e72;
     --green-light: #60c090;
     --stage-meaning: #7a9e7e;
-    --stage-reading: #6b88e0;
+    --stage-reading: #5b82d4;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,8 +34,8 @@
     color: var(--ink);
     min-height: 100vh;
     background-image:
-      radial-gradient(ellipse at 20% 20%, rgba(107,136,224,0.10) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(74,158,114,0.06) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(74,130,180,0.05) 0%, transparent 50%);
   }
 
   body::before {
@@ -241,7 +241,7 @@
     cursor: pointer;
     font-family: 'Noto Sans JP', sans-serif;
     font-size: 13px; color: var(--ink);
-    transition: background 0.4s, border-color 0.4s, color 0.4s, box-shadow 0.4s;
+    transition: background 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s;
     text-align: center; font-weight: 400;
     -webkit-tap-highlight-color: transparent;
     user-select: none; -webkit-user-select: none;
@@ -270,7 +270,7 @@
     border-radius: 10px; background: var(--paper-dark);
     font-family: 'DM Mono', monospace; font-size: 18px;
     color: var(--ink); text-align: center; outline: none;
-    transition: border-color 0.4s, background 0.4s;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
     letter-spacing: 0.05em;
   }
   .romaji-input.correct {
@@ -1731,7 +1731,7 @@ function selectMeaning(btn, selected, correct) {
   setTimeout(() => {
     if (shouldShowReview()) showReviewScreen();
     else nextQuizItem();
-  }, 1000);
+  }, 750);
 }
 
 // ── Kana-only self-assessment ─────────────────────
@@ -1751,7 +1751,7 @@ function kanaOnlyAnswer(knew) {
   setTimeout(() => {
     if (shouldShowReview()) showReviewScreen();
     else nextQuizItem();
-  }, 1000);
+  }, 750);
 }
 
 // ── Reading (text input) ──────────────────────────
@@ -1777,7 +1777,7 @@ function dontKnow() {
   const reveal = document.getElementById('quiz-kana-reveal');
   if (reveal) reveal.classList.remove('hidden');
 
-  setTimeout(() => showReviewScreen(), 1000);
+  setTimeout(() => showReviewScreen(), 750);
 }
 
 function submitReading() {
@@ -1837,7 +1837,7 @@ function submitReading() {
   setTimeout(() => {
     if (shouldShowReview()) showReviewScreen();
     else nextQuizItem();
-  }, 1000);
+  }, 750);
 }
 
 function nextQuizItem() {
@@ -2211,8 +2211,22 @@ function renderPretestCard() {
       html += `<button class="choice-btn" data-meaning="${c.replace(/"/g,'&quot;')}">${c}</button>`;
     });
     html += `</div>`;
+  } else if (isKanaOnly(wd)) {
+    // Kana-only: self-assess, no typing needed
+    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-prompt" style="margin-bottom:12px;">
+               This word is written in kana — did you know how to read it?
+             </div>`;
+    html += `<div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--ink-light);
+                          margin-bottom:28px;">${wd.romaji}</div>`;
+    html += `<div class="choices">
+      <button class="choice-btn" onclick="pretestKanaOnlyAnswer(true)"
+              style="color:var(--green-light);">✓ I knew it</button>
+      <button class="choice-btn" onclick="pretestKanaOnlyAnswer(false)"
+              style="color:var(--red-light);">✗ Didn't know</button>
+    </div>`;
   } else {
-    // Reading
+    // Reading — romaji input
     html += `<div class="quiz-word">${wd.word}</div>`;
     html += `<div class="quiz-prompt">How do you read this word? (romaji)</div>`;
     html += `
@@ -2251,6 +2265,29 @@ function onPretestRomajiInput(input) {
   } else {
     preview.textContent = toHiragana(romajiForPreview(input.value));
     preview.className   = 'kana-preview';
+  }
+}
+
+function pretestKanaOnlyAnswer(knew) {
+  if (pretest.answered) return;
+  pretest.answered = true;
+  const idx = pretest.queue[pretest.pos];
+  if (!pretest.results[idx]) pretest.results[idx] = {};
+  pretest.results[idx].reading = knew;
+
+  // Highlight the chosen button
+  const btns = document.querySelectorAll('#pretest-card .choice-btn');
+  btns.forEach(b => { b.disabled = true; });
+  if (knew) btns[0] && btns[0].classList.add('correct');
+  else      btns[1] && btns[1].classList.add('wrong');
+
+  if (!knew) {
+    if (!state.pretestFailed) state.pretestFailed = [];
+    if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
+    saveState();
+    setTimeout(() => advancePretestWord(), 750);
+  } else {
+    setTimeout(() => advancePretestStage(), 750);
   }
 }
 
