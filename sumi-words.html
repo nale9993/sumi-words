@@ -183,11 +183,18 @@
   }
   .lesson-meaning {
     font-family: 'DM Serif Display', serif;
-    font-size: 26px; color: var(--ink); margin-bottom: 12px;
+    font-size: 26px; color: var(--ink); margin-bottom: 10px;
   }
   .lesson-meaning-sub {
-    font-size: 13px; color: var(--ink-light);
-    font-weight: 300; font-style: italic;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px; margin-top: 4px;
+  }
+  .lesson-meaning-sub-item {
+    font-size: 14px; color: var(--ink-light);
+    background: var(--paper-darker);
+    border: 1px solid color-mix(in srgb, var(--ink-light) 20%, transparent);
+    border-radius: 20px; padding: 3px 12px;
+    font-family: 'Noto Sans JP', sans-serif;
   }
 
   /* ── QUIZ SCREEN ─────────────────────────────────────────────── */
@@ -299,9 +306,9 @@
   /* ── REVIEW / RESULT SCREEN ─────────────────────────────────── */
   .review-screen {
     background: var(--paper-dark); border: 1.5px solid var(--paper-darker);
-    border-radius: 16px; padding: 40px;
+    border-radius: 16px; padding: 36px 40px 32px;
     flex: 1; display: flex; flex-direction: column;
-    position: relative; overflow: hidden;
+    position: relative; overflow: hidden; gap: 0;
   }
   .review-result-banner { position: absolute; top: 0; left: 0; right: 0; height: 5px; }
   .review-result-banner.correct-banner { background: var(--green); }
@@ -309,7 +316,7 @@
 
   .review-result-label {
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
-    font-weight: 600; margin-bottom: 24px; padding-top: 8px;
+    font-weight: 600; margin-bottom: 20px; padding-top: 10px;
   }
   .review-result-label.correct-label { color: var(--green); }
   .review-result-label.wrong-label   { color: var(--red); }
@@ -317,16 +324,16 @@
   .review-word-big {
     font-family: 'Noto Serif JP', serif;
     font-size: clamp(48px, 10vw, 80px);
-    color: var(--ink); text-align: center; margin-bottom: 6px; line-height: 1.1;
+    color: var(--ink); text-align: center; margin-bottom: 10px; line-height: 1.1;
   }
-  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 4px; }
-  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 4px; }
+  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 8px; }
+  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 16px; }
 
-  .review-stage-row { display: flex; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--paper-darker); flex-wrap: wrap; }
+  .review-stage-row { display: flex; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--paper-darker); flex-wrap: wrap; }
   .review-stage-row:last-of-type { border-bottom: none; }
-  .review-divider { border: none; border-top: 1px solid var(--paper-dark); margin: 20px 0; }
+  .review-divider { border: none; border-top: 1px solid var(--paper-darker); margin: 16px 0; }
 
-  .your-answer-line { font-size: 13px; color: var(--ink-light); margin-bottom: 4px; }
+  .your-answer-line { font-size: 13px; color: var(--ink-light); margin-bottom: 6px; }
   .your-answer-line span { font-family: 'DM Mono', monospace; font-weight: 500; }
   .your-answer-line span.wrong-answer   { color: var(--red); }
   .your-answer-line span.correct-answer { color: var(--green); }
@@ -505,7 +512,7 @@
       <div class="action-card" onclick="startPretest()"
            style="--card-color:var(--red); grid-column:span 2;
                   background:color-mix(in srgb,var(--red) 10%,var(--paper-dark));">
-        <span class="card-icon">🎯</span>
+        <span class="card-icon">📖</span>
         <div class="card-title" id="pretest-banner-title">Pretest — Already know some words?</div>
         <div class="card-desc">Test yourself to skip ahead. Fast-tracks known words to Level 6, freeing lesson slots for new ones.</div>
       </div>
@@ -513,19 +520,19 @@
 
     <div class="action-cards">
       <div class="action-card lessons" onclick="startLessons()">
-        <span class="card-icon">🌱</span>
+        <span class="card-icon">✏️</span>
         <div class="card-title">Lessons</div>
         <div class="card-desc">Learn new words</div>
         <div class="card-count" id="home-lesson-count">0</div>
       </div>
       <div class="action-card reviews" onclick="startReviews()">
-        <span class="card-icon">⚡</span>
+        <span class="card-icon">🔁</span>
         <div class="card-title">Reviews</div>
         <div class="card-desc">Practice due cards</div>
         <div class="card-count" id="home-review-count">0</div>
       </div>
       <div class="action-card browse" onclick="showBrowse()">
-        <span class="card-icon">🔍</span>
+        <span class="card-icon">📚</span>
         <div class="card-title">Browse Words</div>
         <div class="card-desc">View all words and your progress</div>
       </div>
@@ -1526,7 +1533,7 @@ function renderLesson() {
     content += `<div class="word-romaji">${wd.romaji}</div>`;
     content += `<div class="lesson-meaning">${wd.meanings[0]}</div>`;
     if (wd.meanings.length > 1) {
-      content += `<div class="lesson-meaning-sub">${wd.meanings.slice(1).join(' · ')}</div>`;
+      content += `<div class="lesson-meaning-sub">${wd.meanings.slice(1).map(m => `<span class="lesson-meaning-sub-item">${m}</span>`).join('')}</div>`;
     }
   } else {
     // Reading stage — show kana prominently with romaji
