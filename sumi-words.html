@@ -160,13 +160,15 @@
   }
 
   /* ── FURIGANA / RUBY ────────────────────────────────────────── */
-  ruby { ruby-align: center; display: inline; }
+  ruby { ruby-align: center; display: inline-block; text-align: center; }
   rt {
     font-family: 'Noto Sans JP', sans-serif;
     font-size: 0.38em;
     color: var(--ink-light);
     font-weight: 400;
     letter-spacing: 0.03em;
+    text-align: center;
+    display: block;
   }
 
   /* Large word display in lesson */
@@ -1577,7 +1579,7 @@ function buildFurigana(word, kana) {
 
   return assigned.map(seg =>
     seg.type === 'kana'
-      ? seg.chars
+      ? `<ruby>${seg.chars}<rt></rt></ruby>`
       : `<ruby>${seg.chars}<rt>${seg.reading}</rt></ruby>`
   ).join('');
 }
@@ -1911,7 +1913,6 @@ function showReviewScreen() {
   const levelLabel   = displayLevel >= MAX_SRS_LEVEL ? '⭐ Mastered' : `Level ${displayLevel} / ${MAX_SRS_LEVEL}`;
   const nextLabel    = formatNextReview(displayCard.nextReview);
 
-  const showKana   = !isKanaOnly(wd) && item.stage !== 'meaning';
   const wordDisplay = isKanaOnly(wd) ? wd.word : buildFurigana(wd.word, wd.kana);
 
   let html = `
