@@ -242,7 +242,9 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none; -webkit-user-select: none;
   }
-  .choice-btn:hover:not(:disabled) { border-color: var(--gold); }
+  @media (hover: hover) {
+    .choice-btn:hover:not(:disabled) { border-color: var(--gold); }
+  }
   .choice-btn.correct {
     background: color-mix(in srgb, var(--green) 20%, var(--paper-dark));
     border-color: var(--green); color: var(--green-light);
@@ -313,7 +315,7 @@
   .review-word-big {
     font-family: 'Noto Serif JP', serif;
     font-size: clamp(36px, 8vw, 60px);
-    color: var(--ink); text-align: center; margin-top: auto; margin-bottom: 20px; line-height: 1.1;
+    color: var(--ink); text-align: center; margin-top: 28px; margin-bottom: 20px; line-height: 1.1;
   }
   .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 16px; }
   .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 12px; }
