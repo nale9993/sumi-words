@@ -305,7 +305,7 @@
 
   .review-result-label {
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
-    font-weight: 600; margin-bottom: 28px; padding-top: 10px;
+    font-weight: 600; margin-bottom: 40px; padding-top: 10px;
   }
   .review-result-label.correct-label { color: var(--green); }
   .review-result-label.wrong-label   { color: var(--red); }
@@ -313,10 +313,10 @@
   .review-word-big {
     font-family: 'Noto Serif JP', serif;
     font-size: clamp(48px, 10vw, 80px);
-    color: var(--ink); text-align: center; margin-bottom: 14px; line-height: 1.1;
+    color: var(--ink); text-align: center; margin-bottom: 20px; line-height: 1.1;
   }
-  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 14px; }
-  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 20px; }
+  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 16px; }
+  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 12px; }
 
   .review-stage-row { display: flex; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--paper-darker); flex-wrap: wrap; }
   .review-stage-row:last-of-type { border-bottom: none; }
@@ -1516,20 +1516,16 @@ function renderLesson() {
 
   let content = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
   content += `<div class="word-display">${wd.word}</div>`;
-  content += `<div class="word-kana">${wd.kana}</div>`;
+  if (!isKanaOnly(wd)) content += `<div class="word-kana">${wd.kana}</div>`;
 
   if (item.stage === 'meaning') {
-    content += `<div class="word-romaji">${wd.romaji}</div>`;
     content += `<div class="lesson-meaning">${wd.meanings.join(' · ')}</div>`;
   } else {
-    // Reading stage — show kana prominently with romaji
+    // Reading stage — show kana prominently (already know it's not kana-only)
     content += `
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0 16px;">
         <div style="font-size:36px;font-family:'Noto Sans JP',sans-serif;color:var(--blue-light);
                     letter-spacing:0.06em;">${wd.kana}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--ink-light);">
-          ${wd.romaji}
-        </div>
       </div>
       <div class="lesson-meaning" style="font-size:20px;">${wd.meanings[0]}</div>
     `;
@@ -1847,7 +1843,7 @@ function showReviewScreen() {
     <div class="review-word-big">${wd.word}</div>
     ${!isKanaOnly(wd) ? `<div class="review-word-kana">${wd.kana}</div>` : ''}
     <div class="review-meaning">${wd.meanings.join(' · ')}</div>
-    <div style="display:flex;gap:16px;justify-content:center;margin:16px 0 20px;flex-wrap:wrap;">
+    <div style="display:flex;gap:16px;justify-content:center;margin:10px 0 16px;flex-wrap:wrap;">
       <div style="font-size:12px;color:var(--ink-light);background:var(--paper);
                   padding:6px 14px;border-radius:20px;border:1px solid var(--paper-darker);">
         ${levelLabel}
@@ -2005,9 +2001,9 @@ function toggleBrowseGroup(gi) {
 
 // ── Word detail modal ─────────────────────────────
 function openWordModal(idx) {
-  const wd       = WORD_DATA[idx];
-  const c        = state.cards[cardKey(idx)];
-  const taught   = c && c.meaning.learning;
+  const wd     = WORD_DATA[idx];
+  const c      = state.cards[cardKey(idx)];
+  const taught = c && c.meaning.learning;
 
   let levelHtml = '';
   if (!taught) {
@@ -2015,48 +2011,32 @@ function openWordModal(idx) {
   } else {
     const lvl = wordDisplayLevel(idx);
     levelHtml = `<div class="kanji-modal-level" style="color:${srsLevelColor(lvl)}">
-      ${lvl >= MAX_SRS_LEVEL ? '⭐ Mastered' : 'Level ' + lvl}
+      ${lvl >= MAX_SRS_LEVEL ? '⭐ Mastered' : 'Level ' + lvl + ' / ' + MAX_SRS_LEVEL}
     </div>`;
   }
 
-  // Stage pill for meaning
-  const mLvl = c && c.meaning.learning ? c.meaning.level : null;
-  const rLvl = c && c.reading.learning ? c.reading.level : null;
-
-  const stagePills = `
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-      <span style="padding:4px 12px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace;
-                   background:color-mix(in srgb,var(--stage-meaning) 15%,transparent);
-                   color:var(--stage-meaning);
-                   border:1px solid color-mix(in srgb,var(--stage-meaning) 30%,transparent);">
-        Meaning ${mLvl !== null ? 'Lv ' + mLvl : '—'}
-      </span>
-      <span style="padding:4px 12px;border-radius:20px;font-size:12px;font-family:'DM Mono',monospace;
-                   background:color-mix(in srgb,var(--stage-reading) 15%,transparent);
-                   color:var(--stage-reading);
-                   border:1px solid color-mix(in srgb,var(--stage-reading) 30%,transparent);">
-        Reading ${rLvl !== null ? 'Lv ' + rLvl : '—'}
-      </span>
-    </div>`;
+  // Next review — use soonest due stage
+  let nextReviewHtml = '';
+  if (taught) {
+    const nextMs = hasReadingStage(idx) && c.reading.learning
+      ? Math.min(c.meaning.nextReview, c.reading.nextReview)
+      : c.meaning.nextReview;
+    nextReviewHtml = `
+      <div class="kanji-modal-section-title">Next Review</div>
+      <div style="font-size:13px;color:var(--ink-light);">${formatNextReview(nextMs)}</div>`;
+  }
 
   document.getElementById('kanji-modal').innerHTML = `
     <div class="kanji-modal-header">
       <div>
         <div class="kanji-modal-word">${wd.word}</div>
-        <div class="kanji-modal-kana">${wd.kana}</div>
+        ${!isKanaOnly(wd) ? `<div class="kanji-modal-kana">${wd.kana}</div>` : ''}
       </div>
       <button class="kanji-modal-close" onclick="closeWordModal()">✕</button>
     </div>
     <div class="kanji-modal-meanings">${wd.meanings.join(' · ')}</div>
-    <div class="kanji-modal-romaji">${wd.romaji}</div>
     ${levelHtml}
-    ${stagePills}
-    ${c && c.reading.learning
-      ? `<div class="kanji-modal-section-title">Next Review</div>
-         <div style="font-size:13px;color:var(--ink-light);">
-           ${formatNextReview(Math.min(c.meaning.nextReview, c.reading.nextReview))}
-         </div>`
-      : ''}
+    ${nextReviewHtml}
   `;
   document.getElementById('kanji-modal-overlay').classList.add('open');
 }
