@@ -162,7 +162,7 @@
   /* Large word display in lesson */
   .word-display {
     font-family: 'Noto Serif JP', serif;
-    font-size: clamp(44px, 11vw, 90px);
+    font-size: clamp(32px, 8vw, 60px);
     line-height: 1.1;
     color: var(--ink);
     margin-bottom: 12px;
@@ -212,7 +212,7 @@
   /* Word shown during quiz */
   .quiz-word {
     font-family: 'Noto Serif JP', serif;
-    font-size: clamp(38px, 9vw, 80px);
+    font-size: clamp(30px, 7vw, 56px);
     line-height: 1.1; color: var(--ink);
     margin-bottom: 12px; text-shadow: 2px 4px 16px rgba(0,0,0,0.08);
   }
@@ -312,8 +312,8 @@
 
   .review-word-big {
     font-family: 'Noto Serif JP', serif;
-    font-size: clamp(48px, 10vw, 80px);
-    color: var(--ink); text-align: center; margin-bottom: 20px; line-height: 1.1;
+    font-size: clamp(36px, 8vw, 60px);
+    color: var(--ink); text-align: center; margin-top: auto; margin-bottom: 20px; line-height: 1.1;
   }
   .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 16px; }
   .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 12px; }
@@ -1324,6 +1324,11 @@ function romajiForPreview(val) {
             .replace(/っ[bcdfghjklmnpqrstvwxyz]$/i, 'っ');
 }
 
+// Render meanings with wider spaced dots so they don't feel crushed
+function formatMeanings(wd) {
+  return wd.meanings.map(m => `<span>${m}</span>`).join('<span style="margin:0 7px;opacity:0.45;font-size:0.8em">·</span>');
+}
+
 // ===================================================
 // MEANING QUIZ — multiple choice
 // ===================================================
@@ -1519,7 +1524,7 @@ function renderLesson() {
   if (!isKanaOnly(wd)) content += `<div class="word-kana">${wd.kana}</div>`;
 
   if (item.stage === 'meaning') {
-    content += `<div class="lesson-meaning">${wd.meanings.join(' · ')}</div>`;
+    content += `<div class="lesson-meaning">${formatMeanings(wd)}</div>`;
   } else {
     // Reading stage — show kana prominently (already know it's not kana-only)
     content += `
@@ -1842,7 +1847,7 @@ function showReviewScreen() {
     </div>
     <div class="review-word-big">${wd.word}</div>
     ${!isKanaOnly(wd) ? `<div class="review-word-kana">${wd.kana}</div>` : ''}
-    <div class="review-meaning">${wd.meanings.join(' · ')}</div>
+    <div class="review-meaning">${formatMeanings(wd)}</div>
     <div style="display:flex;gap:16px;justify-content:center;margin:10px 0 16px;flex-wrap:wrap;">
       <div style="font-size:12px;color:var(--ink-light);background:var(--paper);
                   padding:6px 14px;border-radius:20px;border:1px solid var(--paper-darker);">
@@ -2034,7 +2039,7 @@ function openWordModal(idx) {
       </div>
       <button class="kanji-modal-close" onclick="closeWordModal()">✕</button>
     </div>
-    <div class="kanji-modal-meanings">${wd.meanings.join(' · ')}</div>
+    <div class="kanji-modal-meanings">${formatMeanings(wd)}</div>
     ${levelHtml}
     ${nextReviewHtml}
   `;
