@@ -7,15 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #edeef5;
-    --ink-light: #9099b0;
-    --paper: #0f1015;
-    --paper-dark: #17191f;
-    --paper-darker: #22252e;
-    --red: #e05565;
-    --red-light: #f07878;
+    --ink: #f0ece4;
+    --ink-light: #a89880;
+    --paper: #111010;
+    --paper-dark: #1c1a18;
+    --paper-darker: #2a2622;
+    --red: #e05545;
+    --red-light: #f07060;
     --gold: #c9a84c;
-    --gold-light: #f0c868;
+    --gold-light: #f0c040;
     --blue: #4a8ec2;
     --blue-light: #6aaee0;
     --green: #4a9e72;
@@ -34,8 +34,8 @@
     color: var(--ink);
     min-height: 100vh;
     background-image:
-      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.07) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(74,130,180,0.05) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(44,95,138,0.06) 0%, transparent 50%);
   }
 
   body::before {
@@ -928,15 +928,22 @@ function isMastered(card)     { return card.learning && card.level >= MASTER_THR
 function isUnlockReady(card)  { return card.learning && card.level >= UNLOCK_THRESHOLD; }
 
 // A word is "unlock-ready" when BOTH stages have reached UNLOCK_THRESHOLD
+// Kana-only words have no reading stage — users already know how to read kana
+function hasReadingStage(idx) {
+  return !isKanaOnly(WORD_DATA[idx]);
+}
+
 function isWordUnlockReady(idx) {
   const c = state.cards[cardKey(idx)];
   if (!c) return false;
+  if (!hasReadingStage(idx)) return isUnlockReady(c.meaning);
   return isUnlockReady(c.meaning) && isUnlockReady(c.reading);
 }
 
 function isWordMastered(idx) {
   const c = state.cards[cardKey(idx)];
   if (!c) return false;
+  if (!hasReadingStage(idx)) return isMastered(c.meaning);
   return isMastered(c.meaning) && isMastered(c.reading);
 }
 
@@ -945,6 +952,7 @@ function wordDisplayLevel(idx) {
   const c = state.cards[cardKey(idx)];
   if (!c) return 0;
   const ml = c.meaning.learning ? c.meaning.level : null;
+  if (!hasReadingStage(idx)) return ml ?? 0;
   const rl = c.reading.learning ? c.reading.level : null;
   if (ml === null && rl === null) return 0;
   if (ml === null) return rl;
@@ -1060,7 +1068,7 @@ function getLessonQueue() {
     if (!c) continue;
     if (!c.meaning.learning) {
       queue.push({ idx: i, stage: 'meaning' });
-    } else if (!c.reading.learning && c.meaning.level >= 2) {
+    } else if (hasReadingStage(i) && !c.reading.learning && c.meaning.level >= 2) {
       queue.push({ idx: i, stage: 'reading' });
     }
   }
@@ -1074,7 +1082,9 @@ function getLessonQueue() {
 // While only meaning is learning, it is reviewed solo.
 function allStagesLearning(idx) {
   const c = state.cards[cardKey(idx)];
-  return c && c.meaning.learning && c.reading.learning;
+  if (!c) return false;
+  if (!hasReadingStage(idx)) return false; // kana-only: always solo, meaning stage only
+  return c.meaning.learning && c.reading.learning;
 }
 
 function getReviewQueue() {
@@ -1087,13 +1097,13 @@ function getReviewQueue() {
     if (!c) continue;
 
     if (allStagesLearning(i)) {
-      const anyDue = isDue(c.meaning) || isDue(c.reading);
+      const anyDue = isDue(c.meaning) || (hasReadingStage(i) && isDue(c.reading));
       if (anyDue) groupedWords.push(i);
     } else {
-      // Solo meaning (reading lesson not yet started)
-      const readingPendingLesson = !c.reading.learning && c.meaning.level >= 2;
+      // Solo meaning (reading lesson not yet started, or kana-only)
+      const readingPendingLesson = hasReadingStage(i) && !c.reading.learning && c.meaning.level >= 2;
       if (isDue(c.meaning) && !readingPendingLesson) soloItems.push({ idx: i, stage: 'meaning' });
-      if (isDue(c.reading)) soloItems.push({ idx: i, stage: 'reading' });
+      if (hasReadingStage(i) && isDue(c.reading)) soloItems.push({ idx: i, stage: 'reading' });
     }
   }
 
@@ -1124,11 +1134,12 @@ function getReviewCount() {
     const c = state.cards[cardKey(i)];
     if (!c) continue;
     if (allStagesLearning(i)) {
-      if (isDue(c.meaning) || isDue(c.reading)) n++;
+      const anyDue = isDue(c.meaning) || (hasReadingStage(i) && isDue(c.reading));
+      if (anyDue) n++;
     } else {
-      const readingPendingLesson = !c.reading.learning && c.meaning.level >= 2;
+      const readingPendingLesson = hasReadingStage(i) && !c.reading.learning && c.meaning.level >= 2;
       if (isDue(c.meaning) && !readingPendingLesson) n++;
-      if (isDue(c.reading)) n++;
+      if (hasReadingStage(i) && isDue(c.reading)) n++;
     }
   }
   return n;
@@ -1642,21 +1653,6 @@ function renderQuizCard() {
     });
     html += `</div>`;
 
-  } else if (isKanaOnly(wd)) {
-    // Kana-only word: the display IS the reading, so self-assess instead of typing
-    html += `<div class="quiz-word">${wd.word}</div>`;
-    html += `<div class="quiz-prompt" style="margin-bottom:12px;">
-               This word is written in kana — did you know how to read it?
-             </div>`;
-    html += `<div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--ink-light);
-                          margin-bottom:28px;">${wd.romaji}</div>`;
-    html += `<div class="choices">
-      <button class="choice-btn" id="kana-know-btn"
-              onclick="kanaOnlyAnswer(true)" style="color:var(--green-light);">✓ I knew it</button>
-      <button class="choice-btn" id="kana-dontknow-btn"
-              onclick="kanaOnlyAnswer(false)" style="color:var(--red-light);">✗ Didn't know</button>
-    </div>`;
-
   } else {
     // Show word only (kana hidden — that's what they're being tested on)
     html += `<div class="quiz-word">${wd.word}</div>`;
@@ -1686,7 +1682,7 @@ function renderQuizCard() {
       const btn = e.target.closest('.choice-btn');
       if (btn) selectMeaning(btn, btn.dataset.meaning, session.meaningCorrect);
     });
-  } else if (!isKanaOnly(wd)) {
+  } else {
     setTimeout(() => {
       const inp = document.getElementById('romaji-input');
       if (inp) inp.focus({ preventScroll: true });
@@ -1727,26 +1723,6 @@ function selectMeaning(btn, selected, correct) {
   });
 
   gradeCurrentCard(session.wasCorrect);
-
-  setTimeout(() => {
-    if (shouldShowReview()) showReviewScreen();
-    else nextQuizItem();
-  }, 750);
-}
-
-// ── Kana-only self-assessment ─────────────────────
-function kanaOnlyAnswer(knew) {
-  if (session.answered) return;
-  session.answered         = true;
-  session.wasCorrect       = knew;
-  session.usedSecondChance = false;
-
-  const knowBtn    = document.getElementById('kana-know-btn');
-  const dontKnowBtn = document.getElementById('kana-dontknow-btn');
-  if (knowBtn)     { knowBtn.disabled     = true; if (knew)  knowBtn.classList.add('correct'); }
-  if (dontKnowBtn) { dontKnowBtn.disabled = true; if (!knew) dontKnowBtn.classList.add('wrong'); }
-
-  gradeCurrentCard(knew);
 
   setTimeout(() => {
     if (shouldShowReview()) showReviewScreen();
@@ -2164,7 +2140,7 @@ function startPretest() {
     const c = state.cards[cardKey(i)];
     if (!c) { pretest.queue.push(i); continue; }
     const meaningBelow = c.meaning.level < PRETEST_LEVEL;
-    const readingBelow = c.reading.level < PRETEST_LEVEL;
+    const readingBelow = hasReadingStage(i) && c.reading.level < PRETEST_LEVEL;
     if (meaningBelow || readingBelow) pretest.queue.push(i);
   }
 
@@ -2211,20 +2187,6 @@ function renderPretestCard() {
       html += `<button class="choice-btn" data-meaning="${c.replace(/"/g,'&quot;')}">${c}</button>`;
     });
     html += `</div>`;
-  } else if (isKanaOnly(wd)) {
-    // Kana-only: self-assess, no typing needed
-    html += `<div class="quiz-word">${wd.word}</div>`;
-    html += `<div class="quiz-prompt" style="margin-bottom:12px;">
-               This word is written in kana — did you know how to read it?
-             </div>`;
-    html += `<div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--ink-light);
-                          margin-bottom:28px;">${wd.romaji}</div>`;
-    html += `<div class="choices">
-      <button class="choice-btn" onclick="pretestKanaOnlyAnswer(true)"
-              style="color:var(--green-light);">✓ I knew it</button>
-      <button class="choice-btn" onclick="pretestKanaOnlyAnswer(false)"
-              style="color:var(--red-light);">✗ Didn't know</button>
-    </div>`;
   } else {
     // Reading — romaji input
     html += `<div class="quiz-word">${wd.word}</div>`;
@@ -2268,29 +2230,6 @@ function onPretestRomajiInput(input) {
   }
 }
 
-function pretestKanaOnlyAnswer(knew) {
-  if (pretest.answered) return;
-  pretest.answered = true;
-  const idx = pretest.queue[pretest.pos];
-  if (!pretest.results[idx]) pretest.results[idx] = {};
-  pretest.results[idx].reading = knew;
-
-  // Highlight the chosen button
-  const btns = document.querySelectorAll('#pretest-card .choice-btn');
-  btns.forEach(b => { b.disabled = true; });
-  if (knew) btns[0] && btns[0].classList.add('correct');
-  else      btns[1] && btns[1].classList.add('wrong');
-
-  if (!knew) {
-    if (!state.pretestFailed) state.pretestFailed = [];
-    if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
-    saveState();
-    setTimeout(() => advancePretestWord(), 750);
-  } else {
-    setTimeout(() => advancePretestStage(), 750);
-  }
-}
-
 function pretestSelectMeaning(btn, selected, correct) {
   if (pretest.answered) return;
   pretest.answered   = true;
@@ -2311,9 +2250,9 @@ function pretestSelectMeaning(btn, selected, correct) {
     if (!state.pretestFailed) state.pretestFailed = [];
     if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
     saveState();
-    setTimeout(() => advancePretestWord(), 900);
+    setTimeout(() => advancePretestWord(), 750);
   } else {
-    setTimeout(() => advancePretestStage(), 900);
+    setTimeout(() => advancePretestStage(), 750);
   }
 }
 
@@ -2337,9 +2276,9 @@ function submitPretestReading() {
     if (!state.pretestFailed) state.pretestFailed = [];
     if (!state.pretestFailed.includes(cardKey(idx))) state.pretestFailed.push(cardKey(idx));
     saveState();
-    setTimeout(() => advancePretestWord(), 900);
+    setTimeout(() => advancePretestWord(), 750);
   } else {
-    setTimeout(() => advancePretestStage(), 900);
+    setTimeout(() => advancePretestStage(), 750);
   }
 }
 
@@ -2348,8 +2287,12 @@ function advancePretestStage() {
   const c   = state.cards[cardKey(idx)];
 
   if (pretest.stage === 'meaning') {
-    // Move to reading if it's below PRETEST_LEVEL
-    if (!c || c.reading.level < PRETEST_LEVEL) {
+    // For kana-only words: reading stage doesn't exist, auto-pass it
+    if (!hasReadingStage(idx)) {
+      if (!pretest.results[idx]) pretest.results[idx] = {};
+      pretest.results[idx].reading = true;
+    } else if (!c || c.reading.level < PRETEST_LEVEL) {
+      // Has reading stage and it's below threshold — go test it
       pretest.stage = 'reading';
       renderPretestCard();
       return;
@@ -2359,10 +2302,12 @@ function advancePretestStage() {
   // Both stages done — check if all passed
   const r             = pretest.results[idx] || {};
   const meaningPassed = r.meaning === true || (c && c.meaning.level >= PRETEST_LEVEL);
-  const readingPassed = r.reading === true || (c && c.reading.level >= PRETEST_LEVEL);
+  const readingPassed = !hasReadingStage(idx)
+    ? true
+    : r.reading === true || (c && c.reading.level >= PRETEST_LEVEL);
 
   if (meaningPassed && readingPassed) {
-    // Fast-track both stages to PRETEST_LEVEL
+    // Fast-track meaning stage; reading only if the word has one
     if (!state.cards[cardKey(idx)]) {
       state.cards[cardKey(idx)] = { meaning: createCardState(), reading: createCardState() };
       state.unlockedSet.add(cardKey(idx));
@@ -2371,7 +2316,9 @@ function advancePretestStage() {
     }
     const nextReview = Date.now() + SRS_INTERVALS_MINS[PRETEST_LEVEL] * 60000;
     state.cards[cardKey(idx)].meaning = { level: PRETEST_LEVEL, nextReview, learning: true };
-    state.cards[cardKey(idx)].reading = { level: PRETEST_LEVEL, nextReview, learning: true };
+    if (hasReadingStage(idx)) {
+      state.cards[cardKey(idx)].reading = { level: PRETEST_LEVEL, nextReview, learning: true };
+    }
     pretest.fastTracked++;
     tryUnlockNext();
   }
