@@ -185,17 +185,6 @@
     font-family: 'DM Serif Display', serif;
     font-size: 26px; color: var(--ink); margin-bottom: 10px;
   }
-  .lesson-meaning-sub {
-    display: flex; flex-wrap: wrap; justify-content: center;
-    gap: 6px; margin-top: 4px;
-  }
-  .lesson-meaning-sub-item {
-    font-size: 14px; color: var(--ink-light);
-    background: var(--paper-darker);
-    border: 1px solid color-mix(in srgb, var(--ink-light) 20%, transparent);
-    border-radius: 20px; padding: 3px 12px;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
 
   /* ── QUIZ SCREEN ─────────────────────────────────────────────── */
   .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
@@ -316,7 +305,7 @@
 
   .review-result-label {
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
-    font-weight: 600; margin-bottom: 20px; padding-top: 10px;
+    font-weight: 600; margin-bottom: 28px; padding-top: 10px;
   }
   .review-result-label.correct-label { color: var(--green); }
   .review-result-label.wrong-label   { color: var(--red); }
@@ -324,10 +313,10 @@
   .review-word-big {
     font-family: 'Noto Serif JP', serif;
     font-size: clamp(48px, 10vw, 80px);
-    color: var(--ink); text-align: center; margin-bottom: 10px; line-height: 1.1;
+    color: var(--ink); text-align: center; margin-bottom: 14px; line-height: 1.1;
   }
-  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 8px; }
-  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 16px; }
+  .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 14px; }
+  .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 20px; }
 
   .review-stage-row { display: flex; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--paper-darker); flex-wrap: wrap; }
   .review-stage-row:last-of-type { border-bottom: none; }
@@ -1531,10 +1520,7 @@ function renderLesson() {
 
   if (item.stage === 'meaning') {
     content += `<div class="word-romaji">${wd.romaji}</div>`;
-    content += `<div class="lesson-meaning">${wd.meanings[0]}</div>`;
-    if (wd.meanings.length > 1) {
-      content += `<div class="lesson-meaning-sub">${wd.meanings.slice(1).map(m => `<span class="lesson-meaning-sub-item">${m}</span>`).join('')}</div>`;
-    }
+    content += `<div class="lesson-meaning">${wd.meanings.join(' · ')}</div>`;
   } else {
     // Reading stage — show kana prominently with romaji
     content += `
@@ -1859,13 +1845,9 @@ function showReviewScreen() {
       ${overallOK ? '✓ Correct' : '✗ Incorrect'}
     </div>
     <div class="review-word-big">${wd.word}</div>
-    <div class="review-word-kana">${wd.kana}
-      <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--ink-light);margin-left:8px;">
-        ${wd.romaji}
-      </span>
-    </div>
+    ${!isKanaOnly(wd) ? `<div class="review-word-kana">${wd.kana}</div>` : ''}
     <div class="review-meaning">${wd.meanings.join(' · ')}</div>
-    <div style="display:flex;gap:16px;justify-content:center;margin:12px 0;flex-wrap:wrap;">
+    <div style="display:flex;gap:16px;justify-content:center;margin:16px 0 20px;flex-wrap:wrap;">
       <div style="font-size:12px;color:var(--ink-light);background:var(--paper);
                   padding:6px 14px;border-radius:20px;border:1px solid var(--paper-darker);">
         ${levelLabel}
@@ -1890,10 +1872,7 @@ function showReviewScreen() {
       if (stage === 'meaning') {
         html += `<span style="font-size:14px;color:var(--ink)">${wd.meanings[0]}</span>`;
       } else {
-        html += `<span style="font-size:14px;color:var(--ink)">${wd.kana}
-                   <span style="font-family:'DM Mono',monospace;font-size:12px;
-                                color:var(--ink-light);margin-left:6px;">(${wd.romaji})</span>
-                 </span>`;
+        html += `<span style="font-size:14px;color:var(--ink)">${wd.kana}</span>`;
         if (!ok) {
           const ans = session.userAnswer || '(skipped)';
           html += `<div style="margin:4px 0 0 24px;font-size:12px;">
