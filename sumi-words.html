@@ -159,6 +159,16 @@
     border: 1px solid color-mix(in srgb, var(--stage-color, var(--gold)) 30%, transparent);
   }
 
+  /* ── FURIGANA / RUBY ────────────────────────────────────────── */
+  ruby { ruby-align: center; display: inline; }
+  rt {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.38em;
+    color: var(--ink-light);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+  }
+
   /* Large word display in lesson */
   .word-display {
     font-family: 'Noto Serif JP', serif;
@@ -315,7 +325,7 @@
   .review-word-big {
     font-family: 'Noto Serif JP', serif;
     font-size: clamp(36px, 8vw, 60px);
-    color: var(--ink); text-align: center; margin-top: 28px; margin-bottom: 20px; line-height: 1.1;
+    color: var(--ink); text-align: center; margin-top: 52px; margin-bottom: 20px; line-height: 1.1;
   }
   .review-word-kana  { font-family: 'Noto Sans JP', sans-serif; font-size: 20px; color: var(--ink-light); text-align: center; margin-bottom: 16px; }
   .review-meaning    { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; color: var(--ink); margin-bottom: 12px; }
@@ -1514,6 +1524,64 @@ function startLessons() {
   renderLesson();
 }
 
+// ── Furigana builder ───────────────────────────────
+// Segments word into kanji-runs and kana-runs, assigns kana reading to each
+// kanji run using okurigana anchoring. Falls back to whole-word ruby for
+// all-kanji compounds (where anchoring isn't possible).
+function buildFurigana(word, kana) {
+  const isKanjiChar = c => /[\u4e00-\u9fff\u3400-\u4dbf]/.test(c);
+  const isKanaChar  = c => /[\u3041-\u30ff]/.test(c);
+
+  const wordChars = [...word];
+  const kanaChars = [...kana];
+
+  // Segment word into runs: [{type:'kanji'|'kana', chars}]
+  const segments = [];
+  let i = 0;
+  while (i < wordChars.length) {
+    const isK = isKanjiChar(wordChars[i]);
+    let j = i;
+    while (j < wordChars.length && isKanjiChar(wordChars[j]) === isK) j++;
+    segments.push({ type: isK ? 'kanji' : 'kana', chars: wordChars.slice(i, j).join('') });
+    i = j;
+  }
+
+  // Assign kana portions to kanji segments using okurigana anchoring
+  let kPos = 0;
+  const assigned = [];
+  for (let s = 0; s < segments.length; s++) {
+    const seg = segments[s];
+    if (seg.type === 'kana') {
+      kPos += [...seg.chars].length;
+      assigned.push({ type: 'kana', chars: seg.chars });
+    } else {
+      // Find the next kana segment in the word to anchor the split
+      let nextKanaInWord = null;
+      for (let k = s + 1; k < segments.length; k++) {
+        if (segments[k].type === 'kana') { nextKanaInWord = segments[k].chars; break; }
+      }
+      let reading;
+      if (nextKanaInWord) {
+        const remaining = kanaChars.slice(kPos).join('');
+        const anchor    = remaining.indexOf(nextKanaInWord);
+        reading = anchor >= 0 ? kanaChars.slice(kPos, kPos + anchor).join('') : kanaChars.slice(kPos).join('');
+        if (anchor >= 0) kPos += anchor;
+        else kPos = kanaChars.length;
+      } else {
+        reading = kanaChars.slice(kPos).join('');
+        kPos = kanaChars.length;
+      }
+      assigned.push({ type: 'kanji', chars: seg.chars, reading });
+    }
+  }
+
+  return assigned.map(seg =>
+    seg.type === 'kana'
+      ? seg.chars
+      : `<ruby>${seg.chars}<rt>${seg.reading}</rt></ruby>`
+  ).join('');
+}
+
 function renderLesson() {
   const item  = lessonQueue[lessonPos];
   const wd    = WORD_DATA[item.idx];
@@ -1522,13 +1590,14 @@ function renderLesson() {
   const label = getStageLabel(item.stage);
 
   let content = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
-  content += `<div class="word-display">${wd.word}</div>`;
-  if (!isKanaOnly(wd)) content += `<div class="word-kana">${wd.kana}</div>`;
+  // For non-kana words: embed furigana inside the word display
+  const wordHtml = isKanaOnly(wd) ? wd.word : buildFurigana(wd.word, wd.kana);
+  content += `<div class="word-display">${wordHtml}</div>`;
 
   if (item.stage === 'meaning') {
     content += `<div class="lesson-meaning">${formatMeanings(wd)}</div>`;
   } else {
-    // Reading stage — show kana prominently (already know it's not kana-only)
+    // Reading stage — show kana prominently
     content += `
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0 16px;">
         <div style="font-size:36px;font-family:'Noto Sans JP',sans-serif;color:var(--blue-light);
@@ -1842,13 +1911,15 @@ function showReviewScreen() {
   const levelLabel   = displayLevel >= MAX_SRS_LEVEL ? '⭐ Mastered' : `Level ${displayLevel} / ${MAX_SRS_LEVEL}`;
   const nextLabel    = formatNextReview(displayCard.nextReview);
 
+  const showKana   = !isKanaOnly(wd) && item.stage !== 'meaning';
+  const wordDisplay = isKanaOnly(wd) ? wd.word : buildFurigana(wd.word, wd.kana);
+
   let html = `
     <div class="review-result-banner ${overallOK ? 'correct-banner' : 'wrong-banner'}"></div>
     <div class="review-result-label  ${overallOK ? 'correct-label'  : 'wrong-label'}">
       ${overallOK ? '✓ Correct' : '✗ Incorrect'}
     </div>
-    <div class="review-word-big">${wd.word}</div>
-    ${!isKanaOnly(wd) ? `<div class="review-word-kana">${wd.kana}</div>` : ''}
+    <div class="review-word-big">${wordDisplay}</div>
     <div class="review-meaning">${formatMeanings(wd)}</div>
     <div style="display:flex;gap:16px;justify-content:center;margin:10px 0 16px;flex-wrap:wrap;">
       <div style="font-size:12px;color:var(--ink-light);background:var(--paper);
