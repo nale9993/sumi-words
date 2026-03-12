@@ -1,1 +1,2 @@
 I think this is where you put info about your code. I don't expect this to actually be read but an AI told me to add this. I am a highschooler making an app for me to study japanese words with Claude AI and it has turned out great. I'm very proud of this site and if you actually want to access it use this link: https://nale9993.github.io/sumi-words/sumi-words.html
+Be careful though because all of your data is stored locally on your device so make sure you only study on one device to keep your progress correctly saved.
