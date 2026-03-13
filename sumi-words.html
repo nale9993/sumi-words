@@ -2092,9 +2092,8 @@ function renderQuizCard() {
     html += `</div>`;
 
   } else {
-    // Show word only (kana hidden — that's what they're being tested on)
+    // Show word only — no kana below (tested on reading; romaji→kana preview covers feedback)
     html += `<div class="quiz-word">${wd.word}</div>`;
-    html += `<div class="quiz-word-kana hidden" id="quiz-kana-reveal">${wd.kana}</div>`;
     html += `<div class="quiz-prompt">How do you read this word?</div>`;
     html += `
       <div class="input-area">
@@ -2187,10 +2186,6 @@ function dontKnow() {
 
   gradeCurrentCard(false);
 
-  // Reveal kana
-  const reveal = document.getElementById('quiz-kana-reveal');
-  if (reveal) reveal.classList.remove('hidden');
-
   setTimeout(() => showReviewScreen(), 750);
 }
 
@@ -2241,10 +2236,6 @@ function submitReading() {
   if (dkBtn) dkBtn.disabled = true;
   const hint = document.getElementById('retry-hint');
   if (hint) hint.remove();
-
-  // Reveal kana regardless of result
-  const reveal = document.getElementById('quiz-kana-reveal');
-  if (reveal) reveal.classList.remove('hidden');
 
   gradeCurrentCard(wasCorrect);
 
@@ -2305,9 +2296,9 @@ function showReviewScreen() {
     </div>`;
 
   if (isGrouped && gr && Object.keys(gr.stages).length > 0) {
-    // Show per-stage breakdown
+    // Show per-stage breakdown — meaning only (reading row removed: romaji preview covers it)
     html += '<hr class="review-divider">';
-    for (const stage of ['meaning', 'reading'].filter(s => s in gr.stages)) {
+    for (const stage of ['meaning'].filter(s => s in gr.stages)) {
       const ok   = gr.stages[stage];
       const col  = ok ? 'var(--green-light)' : 'var(--red-light)';
       const icon = ok ? '✓' : '✗';
@@ -2315,30 +2306,11 @@ function showReviewScreen() {
         <span style="color:${col};font-weight:600;margin-right:8px;">${icon}</span>
         <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;
                      color:var(--ink-light);margin-right:8px;">${getStageLabel(stage)}</span>`;
-      if (stage === 'meaning') {
-        html += `<span style="font-size:14px;color:var(--ink)">${wd.meanings[0]}</span>`;
-      } else {
-        html += `<span style="font-size:14px;color:var(--ink)">${wd.kana}</span>`;
-        if (!ok) {
-          const ans = session.userAnswer || '(skipped)';
-          html += `<div style="margin:4px 0 0 24px;font-size:12px;">
-                     <span class="wrong-answer">${ans}</span>
-                     → <span class="correct-answer">${wd.romaji}</span>
-                   </div>`;
-        }
-      }
+      html += `<span style="font-size:14px;color:var(--ink)">${wd.meanings[0]}</span>`;
       html += `</div>`;
     }
   } else {
-    // Solo card — show the one stage detail
-    if (item.stage === 'reading' && !session.wasCorrect) {
-      html += `<hr class="review-divider">
-        <div class="your-answer-line">Your answer: <span class="wrong-answer">${session.userAnswer || '(none)'}</span></div>
-        <div class="your-answer-line">Correct: <span class="correct-answer">${wd.romaji}</span>
-          <span style="font-family:'Noto Sans JP',sans-serif;font-size:13px;
-                       color:var(--ink-light);margin-left:8px;">${wd.kana}</span>
-        </div>`;
-    }
+    // Solo card — reading wrong-answer detail omitted (romaji preview already showed feedback)
   }
 
   html += '<button class="next-btn" onclick="nextQuizItem()">Continue →</button>';
