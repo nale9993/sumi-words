@@ -2093,7 +2093,7 @@ function renderQuizCard() {
 
   } else {
     // Show word only — no kana below (tested on reading; romaji→kana preview covers feedback)
-    html += `<div class="quiz-word">${wd.word}</div>`;
+    html += `<div class="quiz-word" style="margin-top:48px;">${wd.word}</div>`;
     html += `<div class="quiz-prompt">How do you read this word?</div>`;
     html += `
       <div class="input-area">
@@ -2295,23 +2295,7 @@ function showReviewScreen() {
       </div>
     </div>`;
 
-  if (isGrouped && gr && Object.keys(gr.stages).length > 0) {
-    // Show per-stage breakdown — meaning only (reading row removed: romaji preview covers it)
-    html += '<hr class="review-divider">';
-    for (const stage of ['meaning'].filter(s => s in gr.stages)) {
-      const ok   = gr.stages[stage];
-      const col  = ok ? 'var(--green-light)' : 'var(--red-light)';
-      const icon = ok ? '✓' : '✗';
-      html += `<div class="review-stage-row">
-        <span style="color:${col};font-weight:600;margin-right:8px;">${icon}</span>
-        <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;
-                     color:var(--ink-light);margin-right:8px;">${getStageLabel(stage)}</span>`;
-      html += `<span style="font-size:14px;color:var(--ink)">${wd.meanings[0]}</span>`;
-      html += `</div>`;
-    }
-  } else {
-    // Solo card — reading wrong-answer detail omitted (romaji preview already showed feedback)
-  }
+  // Stage breakdown removed — review shows word, meaning and level only
 
   html += '<button class="next-btn" onclick="nextQuizItem()">Continue →</button>';
   document.getElementById('review-content').innerHTML = html;
