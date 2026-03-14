@@ -1453,8 +1453,451 @@ const WORD_DATA = [
   { word:'習慣',          kana:'しゅうかん',          romaji:'shuukan',      meanings:['habit', 'custom'],                     group:'Concepts' },
   { word:'価値',          kana:'かち',             romaji:'kachi',        meanings:['value', 'worth'],                      group:'Concepts' },
   { word:'変化',          kana:'へんか',            romaji:'henka',        meanings:['change', 'variation'],                 group:'Concepts' },
+
+  // ── Time & Dates ──────────────────────────────────────────────
+  { word:'月曜日',        kana:'げつようび',          romaji:'getsuyoubi',   meanings:['Monday'],                              group:'Time & Dates' },
+  { word:'火曜日',        kana:'かようび',           romaji:'kayoubi',      meanings:['Tuesday'],                             group:'Time & Dates' },
+  { word:'水曜日',        kana:'すいようび',          romaji:'suiyoubi',     meanings:['Wednesday'],                           group:'Time & Dates' },
+  { word:'木曜日',        kana:'もくようび',          romaji:'mokuyoubi',    meanings:['Thursday'],                            group:'Time & Dates' },
+  { word:'金曜日',        kana:'きんようび',          romaji:'kinyoubi',     meanings:['Friday'],                              group:'Time & Dates' },
+  { word:'土曜日',        kana:'どようび',           romaji:'doyoubi',      meanings:['Saturday'],                            group:'Time & Dates' },
+  { word:'日曜日',        kana:'にちようび',          romaji:'nichiyoubi',   meanings:['Sunday'],                              group:'Time & Dates' },
+  { word:'先月',          kana:'せんげつ',           romaji:'sengetsu',     meanings:['last month'],                          group:'Time & Dates' },
+  { word:'今月',          kana:'こんげつ',           romaji:'kongetsu',     meanings:['this month'],                          group:'Time & Dates' },
+  { word:'来月',          kana:'らいげつ',           romaji:'raigetsu',     meanings:['next month'],                          group:'Time & Dates' },
+
+  // ── Core Verbs ────────────────────────────────────────────────
+  { word:'調べる',        kana:'しらべる',           romaji:'shiraberu',    meanings:['to investigate', 'to look up'],        group:'Core Verbs' },
+  { word:'気づく',        kana:'きづく',            romaji:'kizuku',       meanings:['to notice', 'to realise'],             group:'Core Verbs' },
+  { word:'伝える',        kana:'つたえる',           romaji:'tsutaeru',     meanings:['to convey', 'to tell', 'to pass on'],  group:'Core Verbs' },
+  { word:'頼む',          kana:'たのむ',            romaji:'tanomu',       meanings:['to ask', 'to request', 'to rely on'],  group:'Core Verbs' },
+  { word:'謝る',          kana:'あやまる',           romaji:'ayamaru',      meanings:['to apologize', 'to apologise'],        group:'Core Verbs' },
+  { word:'褒める',        kana:'ほめる',            romaji:'homeru',       meanings:['to praise', 'to compliment'],          group:'Core Verbs' },
+  { word:'守る',          kana:'まもる',            romaji:'mamoru',       meanings:['to protect', 'to defend', 'to keep'],  group:'Core Verbs' },
+  { word:'含む',          kana:'ふくむ',            romaji:'fukumu',       meanings:['to include', 'to contain'],            group:'Core Verbs' },
+
+  // ── Adjectives ────────────────────────────────────────────────
+  { word:'正しい',        kana:'ただしい',           romaji:'tadashii',     meanings:['correct', 'right', 'proper'],          group:'Adjectives' },
+  { word:'美しい',        kana:'うつくしい',          romaji:'utsukushii',   meanings:['beautiful'],                           group:'Adjectives' },
+  { word:'若い',          kana:'わかい',            romaji:'wakai',        meanings:['young'],                               group:'Adjectives' },
+  { word:'賢い',          kana:'かしこい',           romaji:'kashikoi',     meanings:['clever', 'smart', 'wise'],             group:'Adjectives' },
+  { word:'珍しい',        kana:'めずらしい',          romaji:'mezurashii',   meanings:['rare', 'unusual', 'curious'],          group:'Adjectives' },
+  { word:'退屈',          kana:'たいくつ',           romaji:'taikutsu',     meanings:['boring', 'tedious'],                   group:'Adjectives' },
+  { word:'格好いい',      kana:'かっこいい',          romaji:'kakkoii',      meanings:['cool', 'stylish', 'attractive'],       group:'Adjectives' },
+
+  // ── Daily Life Verbs ──────────────────────────────────────────
+  { word:'手伝う',        kana:'てつだう',           romaji:'tetsudau',     meanings:['to help', 'to assist'],                group:'Daily Life Verbs' },
+  { word:'混む',          kana:'こむ',             romaji:'komu',         meanings:['to be crowded', 'to be congested'],    group:'Daily Life Verbs' },
+  { word:'着く',          kana:'つく',             romaji:'tsuku',        meanings:['to arrive', 'to reach'],               group:'Daily Life Verbs' },
+  { word:'出かける',      kana:'でかける',           romaji:'dekakeru',     meanings:['to go out', 'to head out'],            group:'Daily Life Verbs' },
+  { word:'回る',          kana:'まわる',            romaji:'mawaru',       meanings:['to go around', 'to rotate', 'to turn'], group:'Daily Life Verbs' },
+  { word:'合う',          kana:'あう',             romaji:'au',           meanings:['to fit', 'to suit', 'to match'],       group:'Daily Life Verbs' },
+  { word:'連れる',        kana:'つれる',            romaji:'tsureru',      meanings:['to bring along', 'to take with'],      group:'Daily Life Verbs' },
+
+  // ── People ────────────────────────────────────────────────────
+  { word:'運転手',        kana:'うんてんしゅ',        romaji:'untenshu',     meanings:['driver', 'chauffeur'],                 group:'People' },
+  { word:'作家',          kana:'さっか',            romaji:'sakka',        meanings:['author', 'writer'],                    group:'People' },
+  { word:'歌手',          kana:'かしゅ',            romaji:'kashu',        meanings:['singer'],                              group:'People' },
+  { word:'俳優',          kana:'はいゆう',           romaji:'haiyuu',       meanings:['actor', 'actress'],                    group:'People' },
+  { word:'選手',          kana:'せんしゅ',           romaji:'senshu',       meanings:['athlete', 'player', 'competitor'],     group:'People' },
+
+  // ── Places ────────────────────────────────────────────────────
+  { word:'屋台',          kana:'やたい',            romaji:'yatai',        meanings:['food stall', 'street stand'],          group:'Places' },
+  { word:'地方',          kana:'ちほう',            romaji:'chihou',       meanings:['region', 'local area', 'countryside'], group:'Places' },
+  { word:'首都',          kana:'しゅと',            romaji:'shuto',        meanings:['capital city'],                        group:'Places' },
+  { word:'村',            kana:'むら',             romaji:'mura',         meanings:['village'],                             group:'Places' },
+  { word:'町',            kana:'まち',             romaji:'machi',        meanings:['town', 'neighbourhood', 'street'],     group:'Places' },
+
+  // ── Food & Drink ──────────────────────────────────────────────
+  { word:'チキン',        kana:'ちきん',            romaji:'chikin',       meanings:['chicken'],                             group:'Food & Drink' },
+  { word:'豆',            kana:'まめ',             romaji:'mame',         meanings:['bean', 'pea'],                         group:'Food & Drink' },
+  { word:'ニンジン',      kana:'にんじん',           romaji:'ninjin',       meanings:['carrot'],                              group:'Food & Drink' },
+  { word:'タマネギ',      kana:'たまねぎ',           romaji:'tamanegi',     meanings:['onion'],                               group:'Food & Drink' },
+  { word:'じゃがいも',    kana:'じゃがいも',          romaji:'jagaimo',      meanings:['potato'],                              group:'Food & Drink' },
+  { word:'リンゴ',        kana:'りんご',            romaji:'ringo',        meanings:['apple'],                               group:'Food & Drink' },
+  { word:'バナナ',        kana:'ばなな',            romaji:'banana',       meanings:['banana'],                              group:'Food & Drink' },
+  { word:'みかん',        kana:'みかん',            romaji:'mikan',        meanings:['mandarin', 'tangerine'],               group:'Food & Drink' },
+  { word:'トマト',        kana:'とまと',            romaji:'tomato',       meanings:['tomato'],                              group:'Food & Drink' },
+  { word:'キャベツ',      kana:'きゃべつ',           romaji:'kyabetsu',     meanings:['cabbage'],                             group:'Food & Drink' },
+
+  // ── Objects ───────────────────────────────────────────────────
+  { word:'電池',          kana:'でんち',            romaji:'denchi',       meanings:['battery'],                             group:'Objects' },
+  { word:'鏡',            kana:'かがみ',            romaji:'kagami',       meanings:['mirror'],                              group:'Objects' },
+  { word:'箱',            kana:'はこ',             romaji:'hako',         meanings:['box', 'case'],                         group:'Objects' },
+  { word:'封筒',          kana:'ふうとう',           romaji:'fuutou',       meanings:['envelope'],                            group:'Objects' },
+  { word:'ハンカチ',      kana:'はんかち',           romaji:'hankachi',     meanings:['handkerchief'],                        group:'Objects' },
+  { word:'ポケット',      kana:'ぽけっと',           romaji:'poketto',      meanings:['pocket'],                              group:'Objects' },
+
+  // ── Adverbs ───────────────────────────────────────────────────
+  { word:'もしかして',    kana:'もしかして',          romaji:'moshikashite', meanings:['perhaps', 'maybe', 'possibly'],        group:'Adverbs' },
+  { word:'たとえば',      kana:'たとえば',           romaji:'tatoeba',      meanings:['for example', 'for instance'],         group:'Adverbs' },
+  { word:'大体',          kana:'だいたい',           romaji:'daitai',       meanings:['roughly', 'approximately', 'mostly'],  group:'Adverbs' },
+  { word:'最近',          kana:'さいきん',           romaji:'saikin',       meanings:['recently', 'lately'],                  group:'Adverbs' },
+  { word:'突然',          kana:'とつぜん',           romaji:'totsuzen',     meanings:['suddenly', 'all of a sudden'],         group:'Adverbs' },
+  { word:'ほとんど',      kana:'ほとんど',           romaji:'hotondo',      meanings:['almost', 'nearly', 'mostly'],          group:'Adverbs' },
+  { word:'せめて',        kana:'せめて',            romaji:'semete',       meanings:['at least', 'at the very least'],       group:'Adverbs' },
+
+  // ── Body & Health ─────────────────────────────────────────────
+  { word:'喉',            kana:'のど',             romaji:'nodo',         meanings:['throat'],                              group:'Body & Health' },
+  { word:'額',            kana:'ひたい',            romaji:'hitai',        meanings:['forehead'],                            group:'Body & Health' },
+  { word:'汗',            kana:'あせ',             romaji:'ase',          meanings:['sweat', 'perspiration'],               group:'Body & Health' },
+  { word:'涙',            kana:'なみだ',            romaji:'namida',       meanings:['tear', 'tears'],                       group:'Body & Health' },
+  { word:'息',            kana:'いき',             romaji:'iki',          meanings:['breath', 'breathing'],                 group:'Body & Health' },
+  { word:'脳',            kana:'のう',             romaji:'nou',          meanings:['brain'],                               group:'Body & Health' },
+
+  // ── Emotions ─────────────────────────────────────────────────
+  { word:'満足する',      kana:'まんぞくする',        romaji:'manzokusuru',  meanings:['to be satisfied', 'to be content'],    group:'Emotions' },
+  { word:'後悔する',      kana:'こうかいする',        romaji:'koukaisuru',   meanings:['to regret'],                           group:'Emotions' },
+  { word:'期待する',      kana:'きたいする',          romaji:'kitaisuru',    meanings:['to expect', 'to look forward to'],     group:'Emotions' },
+  { word:'落ち着く',      kana:'おちつく',           romaji:'ochitsuku',    meanings:['to calm down', 'to settle down'],      group:'Emotions' },
+
+  // ── House & Rooms ─────────────────────────────────────────────
+  { word:'ベッド',        kana:'べっど',            romaji:'beddo',        meanings:['bed'],                                 group:'House & Rooms' },
+  { word:'カーテン',      kana:'かーてん',           romaji:'kaaten',       meanings:['curtain'],                             group:'House & Rooms' },
+  { word:'電気',          kana:'でんき',            romaji:'denki',        meanings:['electricity', 'light', 'lamp'],        group:'House & Rooms' },
+  { word:'ゴミ箱',        kana:'ごみばこ',           romaji:'gomibako',     meanings:['bin', 'trash can', 'waste basket'],    group:'House & Rooms' },
+
+  // ── Transport ─────────────────────────────────────────────────
+  { word:'乗り換え',      kana:'のりかえ',           romaji:'norikae',      meanings:['transfer', 'change (trains/buses)'],   group:'Transport' },
+  { word:'出発',          kana:'しゅっぱつ',          romaji:'shuppatsu',    meanings:['departure', 'setting off'],            group:'Transport' },
+  { word:'到着',          kana:'とうちゃく',          romaji:'touchaku',     meanings:['arrival'],                             group:'Transport' },
+  { word:'運賃',          kana:'うんちん',           romaji:'unchin',       meanings:['fare', 'transport fee'],               group:'Transport' },
+  { word:'改札',          kana:'かいさつ',           romaji:'kaisatsu',     meanings:['ticket gate', 'turnstile'],            group:'Transport' },
+
+  // ── School ────────────────────────────────────────────────────
+  { word:'入学',          kana:'にゅうがく',          romaji:'nyuugaku',     meanings:['school enrolment', 'entering school'], group:'School' },
+  { word:'校長',          kana:'こうちょう',          romaji:'kouchou',      meanings:['principal', 'headteacher'],            group:'School' },
+  { word:'塾',            kana:'じゅく',            romaji:'juku',         meanings:['cram school', 'tutoring school'],      group:'School' },
+  { word:'部活',          kana:'ぶかつ',            romaji:'bukatsu',      meanings:['club activities', 'after-school club'], group:'School' },
+
+  // ── Hobbies ───────────────────────────────────────────────────
+  { word:'カラオケ',      kana:'からおけ',           romaji:'karaoke',      meanings:['karaoke'],                             group:'Hobbies' },
+  { word:'キャンプ',      kana:'きゃんぷ',           romaji:'kyanpu',       meanings:['camping'],                             group:'Hobbies' },
+
+  // ── Concepts ─────────────────────────────────────────────────
+  { word:'言語',          kana:'げんご',            romaji:'gengo',        meanings:['language'],                            group:'Concepts' },
+  { word:'会話',          kana:'かいわ',            romaji:'kaiwa',        meanings:['conversation', 'dialogue'],            group:'Concepts' },
+  { word:'法律',          kana:'ほうりつ',           romaji:'houritsu',     meanings:['law'],                                 group:'Concepts' },
+  { word:'嘘',            kana:'うそ',             romaji:'uso',          meanings:['lie', 'falsehood'],                    group:'Concepts' },
+  { word:'話題',          kana:'わだい',            romaji:'wadai',        meanings:['topic', 'subject of conversation'],    group:'Concepts' },
+  { word:'発音',          kana:'はつおん',           romaji:'hatsuon',      meanings:['pronunciation'],                       group:'Concepts' },
+  { word:'事実',          kana:'じじつ',            romaji:'jijitsu',      meanings:['fact'],                                group:'Concepts' },
+  { word:'真実',          kana:'しんじつ',           romaji:'shinjitsu',    meanings:['truth'],                               group:'Concepts' },
+  { word:'文章',          kana:'ぶんしょう',          romaji:'bunshou',      meanings:['sentence', 'text', 'writing'],         group:'Concepts' },
+  { word:'規則',          kana:'きそく',            romaji:'kisoku',       meanings:['rule', 'regulation'],                  group:'Concepts' },
+
+  // ── Conjunctions ─────────────────────────────────────────────
+  { word:'でも',          kana:'でも',             romaji:'demo',         meanings:['but', 'however', 'even so'],           group:'Conjunctions' },
+  { word:'そして',        kana:'そして',            romaji:'soshite',      meanings:['and', 'and then', 'thus'],             group:'Conjunctions' },
+  { word:'だから',        kana:'だから',            romaji:'dakara',       meanings:['so', 'therefore', 'that is why'],      group:'Conjunctions' },
+  { word:'けど',          kana:'けど',             romaji:'kedo',         meanings:['but', 'though', 'although'],           group:'Conjunctions' },
+  { word:'もし',          kana:'もし',             romaji:'moshi',        meanings:['if', 'in case', 'supposing'],          group:'Conjunctions' },
+  { word:'または',        kana:'または',            romaji:'matawa',       meanings:['or', 'either or'],                     group:'Conjunctions' },
+  { word:'それから',      kana:'それから',           romaji:'sorekara',     meanings:['and then', 'after that'],              group:'Conjunctions' },
+  { word:'しかし',        kana:'しかし',            romaji:'shikashi',     meanings:['however', 'but', 'nevertheless'],      group:'Conjunctions' },
+  { word:'それに',        kana:'それに',            romaji:'soreni',       meanings:['moreover', 'besides', 'in addition'],  group:'Conjunctions' },
+  { word:'つまり',        kana:'つまり',            romaji:'tsumari',      meanings:['in other words', 'that is to say'],    group:'Conjunctions' },
+
+  // ── Time & Dates ──────────────────────────────────────────────
+  { word:'毎週',          kana:'まいしゅう',          romaji:'maishuu',      meanings:['every week'],                          group:'Time & Dates' },
+  { word:'毎月',          kana:'まいつき',           romaji:'maitsuki',     meanings:['every month'],                         group:'Time & Dates' },
+  { word:'毎年',          kana:'まいとし',           romaji:'maitoshi',     meanings:['every year'],                          group:'Time & Dates' },
+  { word:'今夜',          kana:'こんや',            romaji:'konya',        meanings:['tonight', 'this evening'],             group:'Time & Dates' },
+  { word:'最初',          kana:'さいしょ',           romaji:'saisho',       meanings:['first', 'beginning', 'at first'],      group:'Time & Dates' },
+  { word:'最後',          kana:'さいご',            romaji:'saigo',        meanings:['last', 'final', 'at the end'],         group:'Time & Dates' },
+  { word:'以前',          kana:'いぜん',            romaji:'izen',         meanings:['before', 'previously', 'formerly'],    group:'Time & Dates' },
+
+  // ── Core Verbs ────────────────────────────────────────────────
+  { word:'見つける',      kana:'みつける',           romaji:'mitsukeru',    meanings:['to find', 'to discover'],              group:'Core Verbs' },
+  { word:'答える',        kana:'こたえる',           romaji:'kotaeru',      meanings:['to answer', 'to respond'],             group:'Core Verbs' },
+  { word:'楽しむ',        kana:'たのしむ',           romaji:'tanoshimu',    meanings:['to enjoy', 'to have fun'],             group:'Core Verbs' },
+  { word:'思い出す',      kana:'おもいだす',          romaji:'omoidasu',     meanings:['to recall', 'to remember'],            group:'Core Verbs' },
+  { word:'確かめる',      kana:'たしかめる',          romaji:'tashikameru',  meanings:['to confirm', 'to make sure'],          group:'Core Verbs' },
+  { word:'戦う',          kana:'たたかう',           romaji:'tatakau',      meanings:['to fight', 'to battle', 'to compete'], group:'Core Verbs' },
+  { word:'迎える',        kana:'むかえる',           romaji:'mukaeru',      meanings:['to welcome', 'to greet', 'to go meet'], group:'Core Verbs' },
+  { word:'避ける',        kana:'さける',            romaji:'sakeru',       meanings:['to avoid', 'to evade'],                group:'Core Verbs' },
+  { word:'目指す',        kana:'めざす',            romaji:'mezasu',       meanings:['to aim for', 'to target'],             group:'Core Verbs' },
+
+  // ── Adjectives ────────────────────────────────────────────────
+  { word:'幸せ',          kana:'しあわせ',           romaji:'shiawase',     meanings:['happy', 'fortunate', 'blessed'],       group:'Adjectives' },
+  { word:'素晴らしい',    kana:'すばらしい',          romaji:'subarashii',   meanings:['wonderful', 'splendid', 'superb'],     group:'Adjectives' },
+  { word:'厳しい',        kana:'きびしい',           romaji:'kibishii',     meanings:['strict', 'severe', 'harsh'],           group:'Adjectives' },
+  { word:'丸い',          kana:'まるい',            romaji:'marui',        meanings:['round', 'circular', 'spherical'],      group:'Adjectives' },
+  { word:'鋭い',          kana:'するどい',           romaji:'surudoi',      meanings:['sharp', 'keen', 'acute'],              group:'Adjectives' },
+  { word:'恐ろしい',      kana:'おそろしい',          romaji:'osoroshii',    meanings:['terrible', 'dreadful', 'frightening'], group:'Adjectives' },
+  { word:'立派',          kana:'りっぱ',            romaji:'rippa',        meanings:['splendid', 'fine', 'impressive'],      group:'Adjectives' },
+  { word:'平ら',          kana:'たいら',            romaji:'taira',        meanings:['flat', 'level', 'even'],               group:'Adjectives' },
+  { word:'新鮮',          kana:'しんせん',           romaji:'shinsen',      meanings:['fresh'],                               group:'Adjectives' },
+  { word:'素直',          kana:'すなお',            romaji:'sunao',        meanings:['honest', 'gentle', 'straightforward'], group:'Adjectives' },
+
+  // ── Emotions ─────────────────────────────────────────────────
+  { word:'焦る',          kana:'あせる',            romaji:'aseru',        meanings:['to panic', 'to be impatient', 'to rush'], group:'Emotions' },
+  { word:'甘える',        kana:'あまえる',           romaji:'amaeru',       meanings:['to depend on', 'to act spoiled'],      group:'Emotions' },
+  { word:'愛する',        kana:'あいする',           romaji:'aisuru',       meanings:['to love'],                             group:'Emotions' },
+  { word:'尊敬する',      kana:'そんけいする',        romaji:'sonkeisuru',   meanings:['to respect', 'to admire'],             group:'Emotions' },
+
+  // ── People ────────────────────────────────────────────────────
+  { word:'政治家',        kana:'せいじか',           romaji:'seijika',      meanings:['politician'],                          group:'People' },
+  { word:'弁護士',        kana:'べんごし',           romaji:'bengoshi',     meanings:['lawyer', 'attorney'],                  group:'People' },
+  { word:'消防士',        kana:'しょうぼうし',        romaji:'shouboushi',   meanings:['firefighter'],                         group:'People' },
+  { word:'飼い主',        kana:'かいぬし',           romaji:'kainushi',     meanings:['owner', 'pet owner'],                  group:'People' },
+  { word:'料理人',        kana:'りょうりにん',        romaji:'ryourijin',    meanings:['cook', 'chef'],                        group:'People' },
+
+  // ── Places ────────────────────────────────────────────────────
+  { word:'商店街',        kana:'しょうてんがい',      romaji:'shoutengai',   meanings:['shopping street', 'shopping district'], group:'Places' },
+  { word:'海岸',          kana:'かいがん',           romaji:'kaigan',       meanings:['coast', 'beach', 'shore'],             group:'Places' },
+  { word:'広場',          kana:'ひろば',            romaji:'hiroba',       meanings:['plaza', 'public square'],              group:'Places' },
+  { word:'山頂',          kana:'さんちょう',          romaji:'sanchou',      meanings:['mountain top', 'summit'],              group:'Places' },
+  { word:'遺跡',          kana:'いせき',            romaji:'iseki',        meanings:['ruins', 'historical site'],            group:'Places' },
+
+  // ── Food & Drink ──────────────────────────────────────────────
+  { word:'昼ご飯',        kana:'ひるごはん',          romaji:'hirugohan',    meanings:['lunch'],                               group:'Food & Drink' },
+  { word:'晩ご飯',        kana:'ばんごはん',          romaji:'bangohan',     meanings:['dinner', 'evening meal'],              group:'Food & Drink' },
+  { word:'スイカ',        kana:'すいか',            romaji:'suika',        meanings:['watermelon'],                          group:'Food & Drink' },
+  { word:'イチゴ',        kana:'いちご',            romaji:'ichigo',       meanings:['strawberry'],                          group:'Food & Drink' },
+  { word:'ブドウ',        kana:'ぶどう',            romaji:'budou',        meanings:['grape', 'grapes'],                     group:'Food & Drink' },
+  { word:'カレー',        kana:'かれー',            romaji:'karee',        meanings:['curry'],                               group:'Food & Drink' },
+  { word:'天ぷら',        kana:'てんぷら',           romaji:'tenpura',      meanings:['tempura'],                             group:'Food & Drink' },
+  { word:'定食',          kana:'ていしょく',          romaji:'teishoku',     meanings:['set meal', 'fixed menu'],              group:'Food & Drink' },
+
+  // ── Objects ───────────────────────────────────────────────────
+  { word:'鍋',            kana:'なべ',             romaji:'nabe',         meanings:['pot', 'pan', 'hot pot'],               group:'Objects' },
+  { word:'タオル',        kana:'たおる',            romaji:'taoru',        meanings:['towel'],                               group:'Objects' },
+  { word:'布団',          kana:'ふとん',            romaji:'futon',        meanings:['futon', 'bedding'],                    group:'Objects' },
+  { word:'枕',            kana:'まくら',            romaji:'makura',       meanings:['pillow'],                              group:'Objects' },
+  { word:'毛布',          kana:'もうふ',            romaji:'moufu',        meanings:['blanket'],                             group:'Objects' },
+  { word:'家具',          kana:'かぐ',             romaji:'kagu',         meanings:['furniture'],                           group:'Objects' },
+  { word:'包丁',          kana:'ほうちょう',          romaji:'houchou',      meanings:['kitchen knife'],                       group:'Objects' },
+  { word:'メモ',          kana:'めも',             romaji:'memo',         meanings:['memo', 'note'],                        group:'Objects' },
+
+  // ── Daily Life Verbs ──────────────────────────────────────────
+  { word:'辞める',        kana:'やめる',            romaji:'yameru',       meanings:['to quit', 'to resign', 'to give up'],  group:'Daily Life Verbs' },
+  { word:'稼ぐ',          kana:'かせぐ',            romaji:'kasegu',       meanings:['to earn', 'to make money'],            group:'Daily Life Verbs' },
+  { word:'育つ',          kana:'そだつ',            romaji:'sodatsu',      meanings:['to grow up', 'to be raised'],          group:'Daily Life Verbs' },
+  { word:'増やす',        kana:'ふやす',            romaji:'fuyasu',       meanings:['to increase', 'to add to'],            group:'Daily Life Verbs' },
+  { word:'減らす',        kana:'へらす',            romaji:'herasu',       meanings:['to reduce', 'to cut down'],            group:'Daily Life Verbs' },
+  { word:'頼る',          kana:'たよる',            romaji:'tayoru',       meanings:['to rely on', 'to depend on'],          group:'Daily Life Verbs' },
+  { word:'叱る',          kana:'しかる',            romaji:'shikaru',      meanings:['to scold', 'to tell off'],             group:'Daily Life Verbs' },
+
+  // ── Transport ─────────────────────────────────────────────────
+  { word:'渋滞',          kana:'じゅうたい',          romaji:'juutai',       meanings:['traffic jam', 'congestion'],           group:'Transport' },
+
+  // ── House & Rooms ─────────────────────────────────────────────
+  { word:'洗面所',        kana:'せんめんじょ',        romaji:'senmenjo',     meanings:['washroom', 'bathroom sink area'],      group:'House & Rooms' },
+  { word:'引き出し',      kana:'ひきだし',           romaji:'hikidashi',    meanings:['drawer'],                              group:'House & Rooms' },
+
+  // ── Nature ────────────────────────────────────────────────────
+  { word:'地震',          kana:'じしん',            romaji:'jishin',       meanings:['earthquake'],                          group:'Nature' },
+  { word:'湖',            kana:'みずうみ',           romaji:'mizuumi',      meanings:['lake'],                                group:'Nature' },
+  { word:'滝',            kana:'たき',             romaji:'taki',         meanings:['waterfall'],                           group:'Nature' },
+  { word:'天気予報',      kana:'てんきよほう',        romaji:'tenkiyohou',   meanings:['weather forecast'],                    group:'Nature' },
+  { word:'砂漠',          kana:'さばく',            romaji:'sabaku',       meanings:['desert'],                              group:'Nature' },
+
+  // ── Body & Health ─────────────────────────────────────────────
+  { word:'胃',            kana:'い',               romaji:'i',            meanings:['stomach (organ)'],                     group:'Body & Health' },
+  { word:'肺',            kana:'はい',             romaji:'hai',          meanings:['lungs'],                               group:'Body & Health' },
+  { word:'医療',          kana:'いりょう',           romaji:'iryou',        meanings:['medical care', 'healthcare'],          group:'Body & Health' },
+  { word:'検査',          kana:'けんさ',            romaji:'kensa',        meanings:['examination', 'test', 'inspection'],   group:'Body & Health' },
+
+  // ── School ────────────────────────────────────────────────────
+  { word:'日本語',        kana:'にほんご',           romaji:'nihongo',      meanings:['Japanese (language)'],                 group:'School' },
+
+  // ── Hobbies ───────────────────────────────────────────────────
+  { word:'将棋',          kana:'しょうぎ',           romaji:'shougi',       meanings:['shogi', 'Japanese chess'],             group:'Hobbies' },
+  { word:'ジョギング',    kana:'じょぎんぐ',          romaji:'jogingu',      meanings:['jogging'],                             group:'Hobbies' },
+  { word:'ヨガ',          kana:'よが',             romaji:'yoga',         meanings:['yoga'],                                group:'Hobbies' },
+
+  // ── Concepts ─────────────────────────────────────────────────
+  { word:'単語',          kana:'たんご',            romaji:'tango',        meanings:['word', 'vocabulary item'],             group:'Concepts' },
+  { word:'文法',          kana:'ぶんぽう',           romaji:'bunpou',       meanings:['grammar'],                             group:'Concepts' },
+  { word:'環境',          kana:'かんきょう',          romaji:'kankyou',      meanings:['environment', 'surroundings'],         group:'Concepts' },
+  { word:'政府',          kana:'せいふ',            romaji:'seifu',        meanings:['government'],                          group:'Concepts' },
+  { word:'締め切り',      kana:'しめきり',           romaji:'shimekiri',    meanings:['deadline', 'closing date'],            group:'Concepts' },
+  { word:'給料',          kana:'きゅうりょう',        romaji:'kyuuryou',     meanings:['salary', 'wages', 'pay'],              group:'Concepts' },
+  { word:'記事',          kana:'きじ',             romaji:'kiji',         meanings:['article', 'news story'],               group:'Concepts' },
+  { word:'番組',          kana:'ばんぐみ',           romaji:'bangumi',      meanings:['TV programme', 'broadcast program'],   group:'Concepts' },
+  { word:'翻訳',          kana:'ほんやく',           romaji:'honyaku',      meanings:['translation'],                         group:'Concepts' },
+  { word:'国際',          kana:'こくさい',           romaji:'kokusai',      meanings:['international'],                       group:'Concepts' },
+  { word:'税金',          kana:'ぜいきん',           romaji:'zeikin',       meanings:['tax'],                                 group:'Concepts' },
+
+  // ── Adverbs ───────────────────────────────────────────────────
+  { word:'必ず',          kana:'かならず',           romaji:'kanarazu',     meanings:['certainly', 'without fail', 'always'],  group:'Adverbs' },
+  { word:'実は',          kana:'じつは',            romaji:'jitsuha',      meanings:['actually', 'to tell the truth'],        group:'Adverbs' },
+  { word:'確かに',        kana:'たしかに',           romaji:'tashikani',    meanings:['certainly', 'surely', 'indeed'],        group:'Adverbs' },
+  { word:'ところで',      kana:'ところで',           romaji:'tokorode',     meanings:['by the way'],                           group:'Adverbs' },
+  { word:'ちなみに',      kana:'ちなみに',           romaji:'chinamini',    meanings:['incidentally', 'by the way'],           group:'Adverbs' },
+
+  // ── Conjunctions ─────────────────────────────────────────────
+  { word:'なぜなら',      kana:'なぜなら',           romaji:'nazenara',     meanings:['because', 'the reason is'],             group:'Conjunctions' },
+  { word:'ただし',        kana:'ただし',            romaji:'tadashi',      meanings:['however', 'provided that', 'but'],      group:'Conjunctions' },
+  { word:'それとも',      kana:'それとも',           romaji:'soretomo',     meanings:['or', 'or else', 'otherwise'],           group:'Conjunctions' },
+  { word:'一方',          kana:'いっぽう',           romaji:'ippou',        meanings:['on the other hand', 'meanwhile'],       group:'Conjunctions' },
+
+  // ── Numbers ──────────────────────────────────────────────────
+  { word:'番',            kana:'ばん',             romaji:'ban',          meanings:['number', 'turn', 'watch'],              group:'Numbers' },
+  { word:'回',            kana:'かい',             romaji:'kai',          meanings:['time', 'occurrence', '-th floor'],      group:'Numbers' },
+  { word:'度',            kana:'ど',               romaji:'do',           meanings:['degree', 'time', 'occasion'],           group:'Numbers' },
+  { word:'円',            kana:'えん',             romaji:'en',           meanings:['yen', 'circle'],                        group:'Numbers' },
+  { word:'枚',            kana:'まい',             romaji:'mai',          meanings:['flat things counter'],                  group:'Numbers' },
+  { word:'冊',            kana:'さつ',             romaji:'satsu',        meanings:['books counter'],                        group:'Numbers' },
+  { word:'台',            kana:'だい',             romaji:'dai',          meanings:['machines counter', 'stand'],            group:'Numbers' },
+  { word:'匹',            kana:'ひき',             romaji:'hiki',         meanings:['small animals counter'],                group:'Numbers' },
+
+  // ── Question Words ───────────────────────────────────────────
+  { word:'何番',          kana:'なんばん',           romaji:'nanban',       meanings:['what number', 'which number'],          group:'Question Words' },
+  { word:'何回',          kana:'なんかい',           romaji:'nankai',       meanings:['how many times'],                       group:'Question Words' },
+
+  // ── Pronouns ─────────────────────────────────────────────────
+  { word:'こちら',        kana:'こちら',            romaji:'kochira',      meanings:['this way', 'this one', 'here'],         group:'Pronouns' },
+  { word:'そちら',        kana:'そちら',            romaji:'sochira',      meanings:['that way', 'your side', 'there'],       group:'Pronouns' },
+  { word:'あちら',        kana:'あちら',            romaji:'achira',       meanings:['that way over there', 'over there'],    group:'Pronouns' },
+  { word:'どちら',        kana:'どちら',            romaji:'dochira',      meanings:['which way', 'which one', 'where'],      group:'Pronouns' },
+
+  // ── Core Verbs ────────────────────────────────────────────────
+  { word:'気をつける',    kana:'きをつける',          romaji:'kiwotsukeru',  meanings:['to be careful', 'to watch out'],        group:'Core Verbs' },
+  { word:'役に立つ',      kana:'やくにたつ',          romaji:'yakunitatsu',  meanings:['to be useful', 'to be helpful'],        group:'Core Verbs' },
+  { word:'気に入る',      kana:'きにいる',           romaji:'kiniiru',      meanings:['to like', 'to be pleased with'],        group:'Core Verbs' },
+  { word:'違う',          kana:'ちがう',            romaji:'chigau',       meanings:['to differ', 'to be wrong', 'to vary'],  group:'Core Verbs' },
+  { word:'同じ',          kana:'おなじ',            romaji:'onaji',        meanings:['same', 'identical'],                    group:'Core Verbs' },
+  { word:'繋がる',        kana:'つながる',           romaji:'tsunagaru',    meanings:['to connect', 'to be linked'],           group:'Core Verbs' },
+  { word:'広がる',        kana:'ひろがる',           romaji:'hirogaru',     meanings:['to spread', 'to expand', 'to widen'],   group:'Core Verbs' },
+  { word:'深まる',        kana:'ふかまる',           romaji:'fukamaru',     meanings:['to deepen', 'to heighten'],             group:'Core Verbs' },
+  { word:'慌てる',        kana:'あわてる',           romaji:'awateru',      meanings:['to panic', 'to rush', 'to be flustered'], group:'Core Verbs' },
+  { word:'諦めない',      kana:'あきらめない',        romaji:'akiramenai',   meanings:['to not give up', 'to keep going'],      group:'Core Verbs' },
+
+  // ── Daily Life Verbs ──────────────────────────────────────────
+  { word:'申し込む',      kana:'もうしこむ',          romaji:'moushikomu',   meanings:['to apply for', 'to register', 'to sign up'], group:'Daily Life Verbs' },
+  { word:'断食する',      kana:'だんじきする',        romaji:'danjikisuru',  meanings:['to fast', 'to abstain from food'],      group:'Daily Life Verbs' },
+  { word:'乾かす',        kana:'かわかす',           romaji:'kawakasu',     meanings:['to dry', 'to air out'],                 group:'Daily Life Verbs' },
+  { word:'冷やす',        kana:'ひやす',            romaji:'hiyasu',       meanings:['to cool', 'to chill', 'to refrigerate'], group:'Daily Life Verbs' },
+  { word:'温める',        kana:'あたためる',          romaji:'atatameru',    meanings:['to warm up', 'to heat'],                group:'Daily Life Verbs' },
+  { word:'混ぜる',        kana:'まぜる',            romaji:'mazeru',       meanings:['to mix', 'to blend', 'to stir'],        group:'Daily Life Verbs' },
+  { word:'切り取る',      kana:'きりとる',           romaji:'kiritoru',     meanings:['to cut out', 'to clip', 'to tear off'], group:'Daily Life Verbs' },
+  { word:'書き込む',      kana:'かきこむ',           romaji:'kakikomu',     meanings:['to write in', 'to fill in', 'to post'],  group:'Daily Life Verbs' },
+
+  // ── Adjectives ────────────────────────────────────────────────
+  { word:'最高',          kana:'さいこう',           romaji:'saikou',       meanings:['best', 'greatest', 'highest'],          group:'Adjectives' },
+  { word:'最低',          kana:'さいてい',           romaji:'saitei',       meanings:['worst', 'lowest', 'minimum'],           group:'Adjectives' },
+  { word:'同様',          kana:'どうよう',           romaji:'douyou',       meanings:['similar', 'same', 'likewise'],          group:'Adjectives' },
+  { word:'様々',          kana:'さまざま',           romaji:'samazama',     meanings:['various', 'diverse', 'all kinds of'],   group:'Adjectives' },
+  { word:'詳しい',        kana:'くわしい',           romaji:'kuwashii',     meanings:['detailed', 'knowledgeable', 'well-informed'], group:'Adjectives' },
+  { word:'相変わらず',    kana:'あいかわらず',        romaji:'aikawarazu',   meanings:['as usual', 'as always'],                group:'Adjectives' },
+
+  // ── Concepts ─────────────────────────────────────────────────
+  { word:'以上',          kana:'いじょう',           romaji:'ijou',         meanings:['more than', 'above', 'that is all'],    group:'Concepts' },
+  { word:'以下',          kana:'いか',             romaji:'ika',          meanings:['less than', 'below', 'the following'],  group:'Concepts' },
+  { word:'以外',          kana:'いがい',            romaji:'igai',         meanings:['other than', 'except for', 'besides'],  group:'Concepts' },
+  { word:'両方',          kana:'りょうほう',          romaji:'ryouhou',      meanings:['both', 'both sides'],                   group:'Concepts' },
+  { word:'全部',          kana:'ぜんぶ',            romaji:'zenbu',        meanings:['all', 'everything', 'entire'],          group:'Concepts' },
+  { word:'半分',          kana:'はんぶん',           romaji:'hanbun',       meanings:['half'],                                 group:'Concepts' },
+  { word:'お互い',        kana:'おたがい',           romaji:'otagai',       meanings:['each other', 'one another', 'mutual'],  group:'Concepts' },
+  { word:'自然',          kana:'しぜん',            romaji:'shizen',       meanings:['nature', 'natural'],                    group:'Concepts' },
+  { word:'現在',          kana:'げんざい',           romaji:'genzai',       meanings:['present', 'current', 'now'],            group:'Concepts' },
+  { word:'将来',          kana:'しょうらい',          romaji:'shourai',      meanings:['future', 'prospects'],                  group:'Concepts' },
+  { word:'順番',          kana:'じゅんばん',          romaji:'junban',       meanings:['order', 'turn', 'sequence'],            group:'Concepts' },
+  { word:'条件',          kana:'じょうけん',          romaji:'jouken',       meanings:['condition', 'requirement', 'terms'],    group:'Concepts' },
+  { word:'基本',          kana:'きほん',            romaji:'kihon',        meanings:['basics', 'fundamentals'],               group:'Concepts' },
+  { word:'人口',          kana:'じんこう',           romaji:'jinkou',       meanings:['population'],                           group:'Concepts' },
+  { word:'文学',          kana:'ぶんがく',           romaji:'bungaku',      meanings:['literature'],                           group:'Concepts' },
+  { word:'画面',          kana:'がめん',            romaji:'gamen',        meanings:['screen', 'display'],                    group:'Concepts' },
+
+  // ── People ────────────────────────────────────────────────────
+  { word:'お客さん',      kana:'おきゃくさん',        romaji:'okyakusan',    meanings:['customer', 'guest', 'visitor'],         group:'People' },
+  { word:'担当者',        kana:'たんとうしゃ',        romaji:'tantousha',    meanings:['person in charge', 'responsible person'], group:'People' },
+  { word:'専門家',        kana:'せんもんか',          romaji:'senmonka',     meanings:['expert', 'specialist'],                 group:'People' },
+  { word:'科学者',        kana:'かがくしゃ',          romaji:'kagakusha',    meanings:['scientist'],                            group:'People' },
+
+  // ── Places ────────────────────────────────────────────────────
+  { word:'交番',          kana:'こうばん',           romaji:'kouban',       meanings:['police box', 'koban'],                  group:'Places' },
+  { word:'大使館',        kana:'たいしかん',          romaji:'taishikan',    meanings:['embassy'],                              group:'Places' },
+  { word:'工場',          kana:'こうじょう',          romaji:'koujou',       meanings:['factory', 'plant'],                     group:'Places' },
+  { word:'農場',          kana:'のうじょう',          romaji:'noujou',       meanings:['farm'],                                 group:'Places' },
+
+  // ── Food & Drink ──────────────────────────────────────────────
+  { word:'チーズ',        kana:'ちーず',            romaji:'chiizu',       meanings:['cheese'],                               group:'Food & Drink' },
+  { word:'バター',        kana:'ばたー',            romaji:'bataa',        meanings:['butter'],                               group:'Food & Drink' },
+  { word:'ハム',          kana:'はむ',             romaji:'hamu',         meanings:['ham'],                                  group:'Food & Drink' },
+  { word:'ソース',        kana:'そーす',            romaji:'soosu',        meanings:['sauce'],                                group:'Food & Drink' },
+  { word:'フライ',        kana:'ふらい',            romaji:'furai',        meanings:['fry', 'fried food'],                    group:'Food & Drink' },
+
+  // ── Objects ───────────────────────────────────────────────────
+  { word:'ライター',      kana:'らいたー',           romaji:'raitaa',       meanings:['lighter', 'writer'],                    group:'Objects' },
+  { word:'スイッチ',      kana:'すいっち',           romaji:'suicchi',      meanings:['switch'],                               group:'Objects' },
+  { word:'コンセント',    kana:'こんせんと',          romaji:'konsento',     meanings:['electrical outlet', 'power socket'],    group:'Objects' },
+  { word:'充電器',        kana:'じゅうでんき',        romaji:'juudenki',     meanings:['charger', 'charging device'],           group:'Objects' },
+  { word:'ケース',        kana:'けーす',            romaji:'keesu',        meanings:['case', 'cover'],                        group:'Objects' },
+
+  // ── Nature ────────────────────────────────────────────────────
+  { word:'大気',          kana:'たいき',            romaji:'taiki',        meanings:['atmosphere', 'air'],                    group:'Nature' },
+  { word:'氷',            kana:'こおり',            romaji:'koori',        meanings:['ice'],                                  group:'Nature' },
+  { word:'霜',            kana:'しも',             romaji:'shimo',        meanings:['frost'],                                group:'Nature' },
+  { word:'干潮',          kana:'かんちょう',          romaji:'kanchou',      meanings:['low tide'],                             group:'Nature' },
+
+  // ── Body & Health ─────────────────────────────────────────────
+  { word:'内臓',          kana:'ないぞう',           romaji:'naizou',       meanings:['internal organs', 'viscera'],           group:'Body & Health' },
+  { word:'消化',          kana:'しょうか',           romaji:'shouka',       meanings:['digestion'],                            group:'Body & Health' },
+  { word:'睡眠',          kana:'すいみん',           romaji:'suimin',       meanings:['sleep', 'slumber'],                     group:'Body & Health' },
+  { word:'栄養',          kana:'えいよう',           romaji:'eiyou',        meanings:['nutrition', 'nourishment'],             group:'Body & Health' },
+
+  // ── Emotions ─────────────────────────────────────────────────
+  { word:'穏やか',        kana:'おだやか',           romaji:'odayaka',      meanings:['calm', 'gentle', 'peaceful'],           group:'Emotions' },
+  { word:'辛抱する',      kana:'しんぼうする',        romaji:'shinbousuru',  meanings:['to endure', 'to be patient'],           group:'Emotions' },
+  { word:'ときめく',      kana:'ときめく',           romaji:'tokimeku',     meanings:['to flutter', 'to feel excited', 'to thrill'], group:'Emotions' },
+
+  // ── School ────────────────────────────────────────────────────
+  { word:'地理',          kana:'ちり',             romaji:'chiri',        meanings:['geography'],                            group:'School' },
+  { word:'音楽の授業',    kana:'おんがくのじゅぎょう', romaji:'ongakunojugyou', meanings:['music class'],                        group:'School' },
+
+  // ── Hobbies ───────────────────────────────────────────────────
+  { word:'写生',          kana:'しゃせい',           romaji:'shasei',       meanings:['sketching from life', 'drawing outdoors'], group:'Hobbies' },
+  { word:'手芸',          kana:'しゅげい',           romaji:'shugei',       meanings:['handicraft', 'needlework'],             group:'Hobbies' },
+  { word:'ハイキング',    kana:'はいきんぐ',          romaji:'haikingu',     meanings:['hiking'],                               group:'Hobbies' },
+  { word:'バドミントン',  kana:'ばどみんとん',        romaji:'badominton',   meanings:['badminton'],                            group:'Hobbies' },
+
+  // ── Transport ─────────────────────────────────────────────────
+  { word:'乗客',          kana:'じょうきゃく',        romaji:'joukyaku',     meanings:['passenger'],                            group:'Transport' },
+  { word:'終点',          kana:'しゅうてん',          romaji:'shuuten',      meanings:['last stop', 'terminal station'],        group:'Transport' },
+  { word:'時刻表',        kana:'じこくひょう',        romaji:'jikokuhyou',   meanings:['timetable', 'schedule'],                group:'Transport' },
+
+  // ── House & Rooms ─────────────────────────────────────────────
+  { word:'ベランダ',      kana:'べらんだ',           romaji:'beranda',      meanings:['balcony', 'veranda'],                   group:'House & Rooms' },
+  { word:'蛇口',          kana:'じゃぐち',           romaji:'jaguchi',      meanings:['tap', 'faucet'],                        group:'House & Rooms' },
+
+  // ── Clothing ─────────────────────────────────────────────────
+  { word:'水着',          kana:'みずぎ',            romaji:'mizugi',       meanings:['swimsuit', 'swimwear'],                 group:'Clothing' },
+  { word:'制服',          kana:'せいふく',           romaji:'seifuku',      meanings:['uniform'],                              group:'Clothing' },
+  { word:'浴衣',          kana:'ゆかた',            romaji:'yukata',       meanings:['yukata', 'casual summer kimono'],       group:'Clothing' },
+
+  // ── Animals ───────────────────────────────────────────────────
+  { word:'羊',            kana:'ひつじ',            romaji:'hitsuji',      meanings:['sheep'],                                group:'Animals' },
+  { word:'イルカ',        kana:'いるか',            romaji:'iruka',        meanings:['dolphin'],                              group:'Animals' },
+  { word:'クジラ',        kana:'くじら',            romaji:'kujira',       meanings:['whale'],                                group:'Animals' },
+  { word:'カラス',        kana:'からす',            romaji:'karasu',       meanings:['crow', 'raven'],                        group:'Animals' },
 ];
 
+
+// ===================================================
+// UNLOCK ORDER
+// ===================================================
+// Words unlock in group-priority order regardless of where they sit in
+// WORD_DATA. Within a group the original array position is preserved.
+const GROUP_ORDER = [
+  'Greetings','Pronouns','Numbers','Question Words','Core Verbs',
+  'Adjectives','Time & Dates','People','Places','Food & Drink',
+  'Objects','Daily Life Verbs','Adverbs','Conjunctions','Directions','Colors',
+  'Body & Health','Emotions','Nature','House & Rooms','Transport',
+  'Clothing','School','Animals','Hobbies','Concepts',
+];
+
+const WORD_UNLOCK_ORDER = WORD_DATA
+  .map((wd, i) => ({ i, priority: GROUP_ORDER.indexOf(wd.group) }))
+  .sort((a, b) => {
+    const pa = a.priority === -1 ? 9999 : a.priority;
+    const pb = b.priority === -1 ? 9999 : b.priority;
+    if (pa !== pb) return pa - pb;
+    return a.i - b.i;
+  })
+  .map(x => x.i);
 
 // ===================================================
 // SRS ENGINE
@@ -1651,8 +2094,8 @@ function getInProgressCount() {
 
 function tryUnlockNext() {
   while (getInProgressCount() < MAX_IN_PROGRESS) {
-    const nextIdx = WORD_DATA.findIndex((_, i) => !state.unlockedSet.has(cardKey(i)));
-    if (nextIdx === -1) break;
+    const nextIdx = WORD_UNLOCK_ORDER.find(i => !state.unlockedSet.has(cardKey(i)));
+    if (nextIdx === undefined) break;
     const k = cardKey(nextIdx);
     state.unlockedSet.add(k);
     state.cards[k] = { meaning: createCardState(), reading: createCardState() };
