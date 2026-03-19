@@ -2188,9 +2188,9 @@ const WORD_UNLOCK_ORDER = WORD_DATA
 // SRS ENGINE
 // ===================================================
 // Intervals in MINUTES
-const SRS_INTERVALS_MINS = [1, 30, 90, 720, 1440, 2880, 5760, 10080, 15120, 30240, 43200];
+const SRS_INTERVALS_MINS = [1, 30, 90, 720, 1440, 2880, 5760, 10080, 20160, 43200, 86400];
 // Level:                   0   1   2    3     4     5     6      7      8      9     10
-// Human:                  1m  30m 90m  12h    1d    2d    4d     1w   1.5w    3w    1mo
+// Human:                  1m  30m 90m  12h    1d    2d    4d     1w    2w    1mo   2mo
 
 const MAX_SRS_LEVEL        = 10;
 const UNLOCK_THRESHOLD     = 5;   // both stages must reach this to free a new word slot
@@ -2495,7 +2495,9 @@ function getSessionReviewCount() {
 
   const inCooldown = state.reviewCooldownUntil && Date.now() < state.reviewCooldownUntil;
   if (inCooldown) {
-    return uniqueWords.filter(w => w.level === 0).length;
+    if (!state.reviewCooldownSet || state.reviewCooldownSet.length === 0) return 0;
+    const cooldownSet = new Set(state.reviewCooldownSet);
+    return uniqueWords.filter(w => cooldownSet.has(w.idx)).length;
   }
 
   const lowLevel   = uniqueWords.filter(w => w.level < 5);
@@ -3006,13 +3008,20 @@ function startReviews() {
     return;
   }
 
-  // Collect unique due word indices with their display levels
+  // Collect unique due word indices with their display levels and earliest due time
   const seenIdx   = new Set();
   const uniqueWords = [];
   for (const item of fullQueue) {
     if (!seenIdx.has(item.idx)) {
       seenIdx.add(item.idx);
-      uniqueWords.push({ idx: item.idx, level: wordDisplayLevel(item.idx) });
+      const c = state.cards[cardKey(item.idx)];
+      const nextReview = c
+        ? Math.min(
+            c.meaning.learning ? c.meaning.nextReview : Infinity,
+            hasReadingStage(item.idx) && c.reading.learning ? c.reading.nextReview : Infinity
+          )
+        : Infinity;
+      uniqueWords.push({ idx: item.idx, level: wordDisplayLevel(item.idx), nextReview });
     }
   }
 
@@ -3021,20 +3030,22 @@ function startReviews() {
   let selectedIdxSet;
   let wasCapped;
 
-  if (inCooldown) {
-    // During cooldown: only level-0 words get through — everything else waits
-    const level0 = uniqueWords.filter(w => w.level === 0);
-    if (level0.length === 0) {
+  if (inCooldown && state.reviewCooldownSet && state.reviewCooldownSet.length > 0) {
+    // During cooldown: serve the same batch that was selected when cooldown started.
+    // Filter to only those that are still actually due (user may have completed some).
+    const cooldownSet = new Set(state.reviewCooldownSet);
+    const stillDue = uniqueWords.filter(w => cooldownSet.has(w.idx));
+    if (stillDue.length === 0) {
       const remaining = Math.ceil((state.reviewCooldownUntil - Date.now()) / 60000);
       alert(`Next batch in ${remaining} minute${remaining !== 1 ? 's' : ''}. This gives your memory time to consolidate.`);
       return;
     }
-    selectedIdxSet = new Set(level0.map(w => w.idx));
+    selectedIdxSet = new Set(stillDue.map(w => w.idx));
     wasCapped = false; // cooldown already running — don't extend it
   } else {
     // Normal: low-level words fill first, high-level fill remaining slots up to cap
     const lowLevel  = uniqueWords.filter(w => w.level < 5);
-    const highLevel = uniqueWords.filter(w => w.level >= 5).sort((a, b) => a.level - b.level);
+    const highLevel = uniqueWords.filter(w => w.level >= 5).sort((a, b) => a.nextReview - b.nextReview);
     const highSlots    = Math.max(0, REVIEW_SESSION_CAP - lowLevel.length);
     const selectedHigh = highLevel.slice(0, highSlots);
     wasCapped = highLevel.length > selectedHigh.length;
@@ -3059,6 +3070,7 @@ function startReviews() {
   // so it runs even if the user exits before finishing.
   if (wasCapped) {
     state.reviewCooldownUntil = Date.now() + REVIEW_COOLDOWN_MS;
+    state.reviewCooldownSet   = [...selectedIdxSet]; // persist the batch for the cooldown window
     saveState();
   }
 
