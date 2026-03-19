@@ -2192,11 +2192,13 @@ const SRS_INTERVALS_MINS = [1, 30, 90, 720, 1440, 2880, 5760, 10080, 15120, 3024
 // Level:                   0   1   2    3     4     5     6      7      8      9     10
 // Human:                  1m  30m 90m  12h    1d    2d    4d     1w   1.5w    3w    1mo
 
-const MAX_SRS_LEVEL    = 10;
-const UNLOCK_THRESHOLD = 5;   // both stages must reach this to free a new word slot
-const MASTER_THRESHOLD = 10;  // shown as "mastered"
-const PRETEST_LEVEL    = 6;   // fast-track target for passed pretest words
-const MAX_IN_PROGRESS  = 15;  // max words active at once
+const MAX_SRS_LEVEL        = 10;
+const UNLOCK_THRESHOLD     = 5;   // both stages must reach this to free a new word slot
+const MASTER_THRESHOLD     = 10;  // shown as "mastered"
+const PRETEST_LEVEL        = 6;   // fast-track target for passed pretest words
+const MAX_IN_PROGRESS      = 15;  // max words active at once
+const REVIEW_SESSION_CAP   = 35;         // max unique words per review session
+const REVIEW_COOLDOWN_MS   = 20 * 60000; // 20-minute cooldown after a capped session
 
 // ── Card key ──────────────────────────────────────
 // Words are keyed by their display form (word field).
@@ -2707,6 +2709,8 @@ let session = {
   usedSecondChance: false,
   groupResults: {},
   meaningCorrect: null,
+  recallPhase: false, // true = showing recall screen before meaning choices
+  wasCapped: false,   // true = this session was batch-capped (triggers cooldown on complete)
 };
 
 let lessonQueue = [];
@@ -2828,6 +2832,7 @@ let pretest = {
   meaningCorrect: null,
   answered: false,
   fastTracked: 0,
+  recallPhase: false, // true = showing recall screen before meaning choices
 };
 
 // ===================================================
@@ -2969,11 +2974,51 @@ function nextLesson() {
 // REVIEW FLOW
 // ===================================================
 function startReviews() {
-  const queue = getReviewQueue();
-  if (queue.length === 0) {
+  const fullQueue = getReviewQueue();
+  if (fullQueue.length === 0) {
     alert('No reviews due right now! Check back later.');
     return;
   }
+
+  // Collect unique due word indices with their display levels
+  const seenIdx   = new Set();
+  const uniqueWords = [];
+  for (const item of fullQueue) {
+    if (!seenIdx.has(item.idx)) {
+      seenIdx.add(item.idx);
+      uniqueWords.push({ idx: item.idx, level: wordDisplayLevel(item.idx) });
+    }
+  }
+
+  const inCooldown = state.reviewCooldownUntil && Date.now() < state.reviewCooldownUntil;
+
+  let selectedIdxSet;
+  let wasCapped;
+
+  if (inCooldown) {
+    // During cooldown: only level-0 words get through — everything else waits
+    const level0 = uniqueWords.filter(w => w.level === 0);
+    if (level0.length === 0) {
+      const remaining = Math.ceil((state.reviewCooldownUntil - Date.now()) / 60000);
+      alert(`Next batch in ${remaining} minute${remaining !== 1 ? 's' : ''}. This gives your memory time to consolidate.`);
+      return;
+    }
+    selectedIdxSet = new Set(level0.map(w => w.idx));
+    wasCapped = false; // cooldown already running — don't extend it
+  } else {
+    // Normal: low-level words fill first, high-level fill remaining slots up to cap
+    const lowLevel  = uniqueWords.filter(w => w.level < 5);
+    const highLevel = uniqueWords.filter(w => w.level >= 5).sort((a, b) => a.level - b.level);
+    const highSlots    = Math.max(0, REVIEW_SESSION_CAP - lowLevel.length);
+    const selectedHigh = highLevel.slice(0, highSlots);
+    wasCapped = highLevel.length > selectedHigh.length;
+    selectedIdxSet = new Set([...lowLevel, ...selectedHigh].map(w => w.idx));
+  }
+
+  const queue = (wasCapped || selectedIdxSet.size < uniqueWords.length)
+    ? fullQueue.filter(item => selectedIdxSet.has(item.idx))
+    : fullQueue;
+
   session.mode         = 'review';
   session.queue        = queue;
   session.currentIdx   = 0;
@@ -2981,6 +3026,7 @@ function startReviews() {
   session.wrong        = 0;
   session.secondChance = 0;
   session.groupResults = {};
+  session.wasCapped    = wasCapped;
   startQuiz();
 }
 
@@ -3013,6 +3059,7 @@ function renderQuizCard() {
   session.userAnswer        = '';
   session.firstAttemptWrong = false;
   session.usedSecondChance  = false;
+  if (item.stage === 'meaning') session.recallPhase = false; // reset recall for each new meaning card
 
   // Progress bar (unique words)
   const uniqueTotal = new Set(session.queue.map(it => it.idx)).size;
@@ -3030,7 +3077,15 @@ function renderQuizCard() {
   let html = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
 
   if (item.stage === 'meaning') {
-    // Show word — NO kana (that would give away the reading quiz answer)
+    if (!session.recallPhase) {
+      // Recall screen — show word only, prompt user to think before seeing choices
+      html += `<div class="quiz-word">${wd.word}</div>`;
+      html += `<div class="quiz-prompt">Try to recall the meaning before seeing the choices</div>`;
+      html += `<button class="submit-btn" onclick="showMeaningChoices()" style="margin-top:20px;">Show Choices →</button>`;
+      card.innerHTML = html;
+      return;
+    }
+    // Multiple choice
     html += `<div class="quiz-word">${wd.word}</div>`;
     html += `<div class="quiz-prompt">What does this word mean?</div>`;
     const { choices, correct } = getMeaningChoices(item.idx);
@@ -3075,6 +3130,11 @@ function renderQuizCard() {
       if (inp) inp.focus({ preventScroll: true });
     }, 150);
   }
+}
+
+function showMeaningChoices() {
+  session.recallPhase = true;
+  renderQuizCard();
 }
 
 // ── Live romaji → kana preview ───────────────────
@@ -3264,6 +3324,13 @@ function showComplete() {
                 'Keep practicing — repetition is the key.';
   document.getElementById('complete-title').textContent =
     session.mode === 'lesson' ? 'Lessons Complete!' : 'Reviews Complete!';
+
+  // If this review session was capped, start the 20-minute cooldown
+  if (session.mode === 'review' && session.wasCapped) {
+    state.reviewCooldownUntil = Date.now() + REVIEW_COOLDOWN_MS;
+    saveState();
+  }
+
   showScreen('complete');
 }
 
@@ -3457,7 +3524,7 @@ function startPretest() {
   if (!state.pretestFailed) state.pretestFailed = [];
   pretest.queue = [];
 
-  for (let i = 0; i < WORD_DATA.length; i++) {
+  for (const i of WORD_UNLOCK_ORDER) {
     if (state.pretestFailed.includes(cardKey(i))) continue;
     const c = state.cards[cardKey(i)];
     if (!c) { pretest.queue.push(i); continue; }
@@ -3473,6 +3540,7 @@ function startPretest() {
 
   pretest.pos         = 0;
   pretest.stage       = 'meaning';
+  pretest.recallPhase = false;
   pretest.results     = {};
   pretest.fastTracked = 0;
   pretestInProgress   = true;
@@ -3500,6 +3568,15 @@ function renderPretestCard() {
   let html = `<div class="stage-badge" style="--stage-color:${color}">${label}</div>`;
 
   if (pretest.stage === 'meaning') {
+    if (!pretest.recallPhase) {
+      // Recall screen — show word only, prompt user to think before seeing choices
+      html += `<div class="quiz-word">${wd.word}</div>`;
+      html += `<div class="quiz-prompt">Try to recall the meaning before seeing the choices</div>`;
+      html += `<button class="submit-btn" onclick="showPretestMeaningChoices()" style="margin-top:20px;">Show Choices →</button>`;
+      card.innerHTML = html;
+      card.className = 'quiz-card animate-in';
+      return;
+    }
     const { choices, correct } = getMeaningChoices(idx);
     pretest.meaningCorrect = correct;
     html += `<div class="quiz-word">${wd.word}</div>`;
@@ -3539,6 +3616,11 @@ function renderPretestCard() {
       if (inp) inp.focus({ preventScroll: true });
     }, 150);
   }
+}
+
+function showPretestMeaningChoices() {
+  pretest.recallPhase = true;
+  renderPretestCard();
 }
 
 function onPretestRomajiInput(input) {
@@ -3655,6 +3737,7 @@ function advancePretestWord() {
     return;
   }
   pretest.stage = 'meaning';
+  pretest.recallPhase = false; // reset for the new word
   renderPretestCard();
 }
 
