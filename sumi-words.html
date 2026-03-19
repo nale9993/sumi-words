@@ -3054,6 +3054,14 @@ function startReviews() {
   session.groupResults = {};
   session.wasCapped    = wasCapped;
   session.recallPhase  = false;
+
+  // Start the cooldown immediately when a capped session begins,
+  // so it runs even if the user exits before finishing.
+  if (wasCapped) {
+    state.reviewCooldownUntil = Date.now() + REVIEW_COOLDOWN_MS;
+    saveState();
+  }
+
   startQuiz();
 }
 
@@ -3351,12 +3359,6 @@ function showComplete() {
                 'Keep practicing — repetition is the key.';
   document.getElementById('complete-title').textContent =
     session.mode === 'lesson' ? 'Lessons Complete!' : 'Reviews Complete!';
-
-  // If this review session was capped, start the 20-minute cooldown
-  if (session.mode === 'review' && session.wasCapped) {
-    state.reviewCooldownUntil = Date.now() + REVIEW_COOLDOWN_MS;
-    saveState();
-  }
 
   showScreen('complete');
 }
