@@ -2478,6 +2478,32 @@ function getReviewCount() {
   return n;
 }
 
+// Returns how many unique words will actually appear in the next review session,
+// respecting the 35-cap and cooldown the same way startReviews() does.
+function getSessionReviewCount() {
+  const fullQueue = getReviewQueue();
+  if (fullQueue.length === 0) return 0;
+
+  const seenIdx    = new Set();
+  const uniqueWords = [];
+  for (const item of fullQueue) {
+    if (!seenIdx.has(item.idx)) {
+      seenIdx.add(item.idx);
+      uniqueWords.push({ idx: item.idx, level: wordDisplayLevel(item.idx) });
+    }
+  }
+
+  const inCooldown = state.reviewCooldownUntil && Date.now() < state.reviewCooldownUntil;
+  if (inCooldown) {
+    return uniqueWords.filter(w => w.level === 0).length;
+  }
+
+  const lowLevel   = uniqueWords.filter(w => w.level < 5);
+  const highLevel  = uniqueWords.filter(w => w.level >= 5);
+  const highSlots  = Math.max(0, REVIEW_SESSION_CAP - lowLevel.length);
+  return lowLevel.length + Math.min(highLevel.length, highSlots);
+}
+
 // ===================================================
 // GRADING (grouped + solo)
 // ===================================================
@@ -2736,7 +2762,7 @@ function updateHomeStats() {
   if (WORD_DATA.length === 0) return; // data not loaded yet
 
   const lessons = getLessonQueue().length;
-  const reviews = getReviewCount();
+  const reviews = getSessionReviewCount();
   let mastered = 0;
   for (let i = 0; i < WORD_DATA.length; i++) {
     if (!state.unlockedSet.has(cardKey(i))) continue;
@@ -3027,6 +3053,7 @@ function startReviews() {
   session.secondChance = 0;
   session.groupResults = {};
   session.wasCapped    = wasCapped;
+  session.recallPhase  = false;
   startQuiz();
 }
 
@@ -3059,7 +3086,6 @@ function renderQuizCard() {
   session.userAnswer        = '';
   session.firstAttemptWrong = false;
   session.usedSecondChance  = false;
-  if (item.stage === 'meaning') session.recallPhase = false; // reset recall for each new meaning card
 
   // Progress bar (unique words)
   const uniqueTotal = new Set(session.queue.map(it => it.idx)).size;
@@ -3265,6 +3291,7 @@ function nextQuizItem() {
       session.currentIdx++;
     } else break;
   }
+  session.recallPhase = false; // reset recall for the incoming meaning card
   showScreen('quiz');
   renderQuizCard();
 }
